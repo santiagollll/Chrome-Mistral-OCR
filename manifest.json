@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "Mistral OCR for PDFs & JPEGs",
+  "version": "1.0.0",
+  "description": "OCR de PDFs y JPEGs en Chrome con Mistral. Guarda transcription.md e imágenes por hash.",
+
+  "developer": {
+    "name": "santiagollll",
+    "url": "https://github.com/santiagollll/Mistral-ocr"
+  },
+
+  "icons": {
+    "128": "icon128.png",
+    "48": "icon48.png",
+    "32": "icon32.png",
+    "16": "icon16.png"
+  },
+
+  "action": {
+    "default_title": "Mistral OCR",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "icon128.png",
+      "48": "icon48.png",
+      "32": "icon32.png",
+      "16": "icon16.png"
+    }
+  },
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "options_page": "options.html",
+
+  "permissions": [
+    "downloads",
+    "storage",
+    "tabs",
+    "activeTab",
+    "clipboardWrite",
+    "webRequest"
+  ],
+
+  "host_permissions": [
+    "<all_urls>",
+    "https://api.mistral.ai/*",
+    "*://*/*",
+    "file:///*"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}
