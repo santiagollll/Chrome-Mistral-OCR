@@ -40,9 +40,9 @@ Para usar la extensión por **primera vez** es necesaria una "clave API" de la p
 
 **Ejemplos de enlaces a documentos que son previsualizables (A día de hoy 15 de Noviembre de 2025):**
 
-* https://pdfobject.com/pdf/sample.pdf (Pdf de ejemplo)
-* https://www.researchgate.net/profile/Azadeh-Nazemi/publication/263091276/figure/fig2/AS:296576124768261@1447720666434/Lost-data-segment-during-OCR-bill-sample-image-shown-in-figure-1.png (Imagen Png de ejemplo)
-* https://docs.google.com/document/d/1y1HWBSPeNxqzETDntClR_aadtCB-T517tH2hYj11k3E/edit?tab=t.0 (Ejemplo de Documento de Google)
+* [Pdf de ejemplo] (https://pdfobject.com/pdf/sample.pdf)
+* [Imagen Png de ejemplo] (https://www.researchgate.net/profile/Azadeh-Nazemi/publication/263091276/figure/fig2/AS:296576124768261@1447720666434/Lost-data-segment-during-OCR-bill-sample-image-shown-in-figure-1.png)
+* [Ejemplo de Documento de Google] (https://docs.google.com/document/d/1y1HWBSPeNxqzETDntClR_aadtCB-T517tH2hYj11k3E/edit?tab=t.0)
 
 ## Legal:
 Este software no está asociado a Mistral AI. Este software es independiente y no oficial. Este software cuenta con derechos de autor y una licencia MIT adjunta.
