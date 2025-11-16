@@ -38,7 +38,8 @@ Para usar la extensión por **primera vez** es necesaria una "clave API" de la p
 3. Para abrir/copiar/eliminar transcripciones anteriores solamente es necesario invocar la extensión en cualquier pestaña y administrar las transcripciones que se mostrarán en una lista.
 4. El programa también es compatible para transcribir Documentos de Google; Presentaciones de Google o Hojas de cálculo de Google. Para esto es necesario usar la extension mientras el navegador esta mostrando la pestaña del documento en primer plano.
 
-Ejemplos de enlaces a documentos que son previsualizables (A día de hoy 15 de Noviembre de 2025)
+Ejemplos de enlaces a documentos que son previsualizables (A día de hoy 15 de Noviembre de 2025):
+
 -https://pdfobject.com/pdf/sample.pdf (Pdf de ejemplo)
 -https://file-examples.com/storage/fe0d18d3dc691928298c7ef/2017/10/file_example_JPG_100kB.jpg (Imagen Jpg de ejemplo)
 -https://docs.google.com/document/d/1y1HWBSPeNxqzETDntClR_aadtCB-T517tH2hYj11k3E/edit?tab=t.0 (Ejemplo de Documento de Google)
