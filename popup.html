@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Mistral OCR</title>
+    <style>
+      body { font-family: sans-serif; min-width: 320px; margin: 12px; }
+      button { margin: 4px 0; }
+      .entry { border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px; }
+      .small { color: #666; font-size: 12px; }
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .actions button { margin-right: 6px; }
+      .warn { color: #b00; }
+      #list { max-height: 340px; overflow: auto; }
+      #controls.hidden { display: none; }
+      #prompt { background: #f5faff; border: 1px solid #cce0ff; padding: 8px; margin: 8px 0; display: none; }
+      .inline { display: inline-flex; align-items: center; gap: 6px; }
+      a { color: #06c; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <div id="status" class="small"></div>
+
+    <div id="prompt">
+      <div class="small">Este recurso ya tiene transcripción. ¿Deseas abrir la carpeta contenedora?</div>
+      <div class="row">
+        <button id="btnPromptOpen">Abrir carpeta</button>
+        <button id="btnPromptDismiss">No</button>
+      </div>
+    </div>
+
+    <div id="controls">
+      <div class="row">
+        <button id="btnRun">Transcribir (OCR)</button>
+        <label class="inline">
+          <input type="checkbox" id="chkImages" checked>
+          Descargar imágenes
+        </label>
+      </div>
+      <div id="existInfo" class="small"></div>
+      <div class="small">API key: <span id="apiKeyStatus"></span> | <a id="openOptions" href="#">Configurar</a></div>
+    </div>
+
+    <h4>Transcripciones guardadas</h4>
+    <div id="list"></div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

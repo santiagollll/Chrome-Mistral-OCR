@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Opciones - Mistral OCR</title>
+    <style>
+      body { font-family: sans-serif; margin: 16px; max-width: 640px; }
+      input[type="password"], input[type="text"] { width: 100%; padding: 8px; }
+      button { margin-top: 8px; }
+      .small { color: #666; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h2>Configuración</h2>
+    <label>API key de Mistral</label><br>
+    <input type="password" id="apiKey" placeholder="TuAp1KeyDeM1stralSegurAA..." autocomplete="off">
+    <button id="save">Guardar</button>
+    <div id="msg" class="small"></div>
+    <p class="small">
+      Nota: si vas a abrir PDFs locales (file://), en chrome://extensions habilita “Permitir el acceso a URLs de archivos” para esta extensión.
+    </p>
+    <script src="options.js"></script>
+  </body>
+</html>
