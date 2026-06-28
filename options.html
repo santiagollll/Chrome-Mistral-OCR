@@ -1,0 +1,249 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title data-i18n="options_page_title">Opciones - Mistral OCR</title>
+    <link rel="stylesheet" href="styles/mistral-ui.css">
+  </head>
+  <body class="options-page">
+    <main class="app-shell options-grid">
+      <header class="app-header">
+        <div>
+          <div class="eyebrow" data-i18n="settings">Configuración</div>
+          <h1>Mistral OCR</h1>
+          <p data-i18n="options_subtitle">Administra credenciales locales, exportación y opciones avanzadas de OCR.</p>
+        </div>
+        <a id="openTranscriptions" class="button subtle" href="transcriptions.html" data-i18n="view_transcriptions">Ver transcripciones</a>
+      </header>
+
+      <section id="setupGuide" class="card setup-guide hidden" aria-label="Guía de primer uso" data-i18n-aria-label="setup_guide_aria">
+        <div>
+          <div class="eyebrow" data-i18n="first_use">Primer uso</div>
+          <h2 data-i18n="options_setup_title">Conecta Mistral OCR con tu API key</h2>
+          <p data-i18n="options_setup_body">La extensión funciona localmente en Chrome, pero el OCR se ejecuta usando tu cuenta de Mistral.</p>
+        </div>
+        <ol>
+          <li data-i18n="options_setup_step_open">Abre Mistral Console y crea una API key.</li>
+          <li data-i18n="options_setup_step_paste">Pega esa clave en API key 1.</li>
+          <li data-i18n="options_setup_step_save">Haz click en Guardar.</li>
+          <li data-i18n="options_setup_step_run">Abre un PDF, documento o imagen compatible y usa Transcribir (OCR) desde el popup.</li>
+        </ol>
+        <div class="actions">
+          <a class="button primary" href="https://console.mistral.ai/" target="_blank" rel="noopener noreferrer" data-i18n="open_mistral_console">Abrir Mistral Console</a>
+        </div>
+      </section>
+
+      <section class="settings-grid" aria-label="API keys" data-i18n-aria-label="api_keys_aria">
+        <article class="card stack">
+          <div>
+            <div class="eyebrow" data-i18n="primary_credential">Credencial principal</div>
+            <h2>API key 1</h2>
+          </div>
+          <div class="field-group">
+            <label for="apiKey1Label" data-i18n="visible_name">Nombre visible</label>
+            <input type="text" id="apiKey1Label" placeholder="API KEY 1" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label for="apiKey1" data-i18n="key">Clave</label>
+            <div class="field-row">
+              <input type="password" id="apiKey1" placeholder="TuAp1KeyDeM1stralSegurAA..." autocomplete="off">
+              <button id="toggleVisibility1" type="button" data-i18n="show">Mostrar</button>
+            </div>
+          </div>
+          <div class="small" data-i18n="stored_locally_note">Se guarda en el almacenamiento local de Chrome de esta extensión.</div>
+        </article>
+
+        <article class="card stack">
+          <div>
+            <div class="eyebrow" data-i18n="optional_credential">Credencial opcional</div>
+            <div class="section-title">
+              <h2>API key 2</h2>
+              <button class="help-btn" type="button" data-help-toggle="helpApiKey2" aria-expanded="false" aria-label="Ver información sobre API KEY 2" data-i18n-aria-label="api_key_2_help_aria">?</button>
+            </div>
+          </div>
+          <div id="helpApiKey2" class="help-panel small hidden">
+            <p data-i18n="api_key_2_help_intro">La segunda API key sirve para alternar rápido entre dos cuentas o perfiles de Mistral desde el popup.</p>
+            <ul>
+              <li data-i18n="api_key_2_help_free">El plan gratis de Mistral puede usar tus documentos para mejorar sus modelos. Eso significa menos privacidad.</li>
+              <li data-i18n="api_key_2_help_paid">El plan de pago de Mistral puede configurarse para no usar tus documentos para entrenamiento. Eso da más privacidad.</li>
+              <li data-i18n="api_key_2_help_practical">La idea práctica: usar gratis cuando no importa tanto la privacidad, y usar pago cuando el documento es sensible.</li>
+              <li data-i18n="api_key_2_help_empty">Si esta clave queda vacía, el popup no mostrará selector de API key.</li>
+            </ul>
+          </div>
+          <div class="field-group">
+            <label for="apiKey2Label" data-i18n="visible_name">Nombre visible</label>
+            <input type="text" id="apiKey2Label" placeholder="API KEY 2" autocomplete="off">
+          </div>
+          <div class="field-group">
+            <label for="apiKey2" data-i18n="key">Clave</label>
+            <div class="field-row">
+              <input type="password" id="apiKey2" placeholder="Opcional" autocomplete="off" data-i18n-placeholder="optional">
+              <button id="toggleVisibility2" type="button" data-i18n="show">Mostrar</button>
+            </div>
+          </div>
+          <div class="small" data-i18n="secondary_empty_note">Si esta clave está vacía, el popup no mostrará selector.</div>
+        </article>
+      </section>
+
+      <section class="card stack" aria-label="Exportación" data-i18n-aria-label="export_aria">
+        <div>
+          <div class="eyebrow" data-i18n="export">Exportación</div>
+          <h2 data-i18n="files_and_images">Archivos e imágenes</h2>
+        </div>
+        <div class="field-group">
+          <label for="imageExportMode" data-i18n="image_export">Exportación de imágenes</label>
+          <select id="imageExportMode">
+            <option value="zip" data-i18n="download_images_zip">Descargar imágenes por ZIP</option>
+            <option value="separate" data-i18n="download_images_separate">Descargar imágenes por separado</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="card stack" aria-label="Custom icon">
+        <div>
+          <div class="eyebrow">Personalization</div>
+          <h2>Extension icon</h2>
+          <p class="small">Use a PNG URL to replace the toolbar icon of the extension in this browser.</p>
+        </div>
+        <div class="field-group">
+          <label for="customIconUrl">PNG icon URL</label>
+          <input
+            type="url"
+            id="customIconUrl"
+            inputmode="url"
+            placeholder="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Mistral_AI_logo_%282025%E2%80%93%29.svg/960px-Mistral_AI_logo_%282025%E2%80%93%29.svg.png"
+            autocomplete="off">
+        </div>
+        <div class="small">
+          Example:
+          <a
+            href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Mistral_AI_logo_%282025%E2%80%93%29.svg/960px-Mistral_AI_logo_%282025%E2%80%93%29.svg.png"
+            target="_blank"
+            rel="noopener noreferrer">Official Mistral logo PNG</a>
+        </div>
+        <div class="small">Only direct HTTPS PNG URLs are supported. The icon is resized and stored locally in this browser.</div>
+        <div class="actions">
+          <button id="applyCustomIcon" type="button">Apply custom icon</button>
+          <button id="resetCustomIcon" class="subtle" type="button">Reset default icon</button>
+        </div>
+      </section>
+
+      <section class="card stack" aria-label="Preview y edición" data-i18n-aria-label="preview_edit_aria">
+        <div>
+          <div class="eyebrow">Preview/Edit</div>
+          <h2 data-i18n="result_editing">Edición de resultados</h2>
+        </div>
+        <label class="toggle-row">
+          <input type="checkbox" id="previewAutoSaveDisabled">
+          <span>
+            <span data-i18n="disable_preview_autosave">Desactivar el guardado automático en el modo preview</span>
+            <span class="small" data-i18n="disable_preview_autosave_note">Si está activado, Preview/Edit mostrará el botón Guardar cambios.</span>
+          </span>
+        </label>
+      </section>
+
+      <section class="card stack" aria-label="Opciones experimentales" data-i18n-aria-label="experimental_options_aria">
+        <div>
+          <div class="eyebrow" data-i18n="experimental">Experimental</div>
+          <h2 data-i18n="extraction_google_workspace">Extracción y Google Workspace</h2>
+        </div>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="removeDocumentHeader">
+          <span data-i18n="remove_document_header">Eliminar HEADER de documento</span>
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="removeDocumentFooter">
+          <span data-i18n="remove_document_footer">Eliminar FOOTER de documento</span>
+        </label>
+        <div class="small" data-i18n="header_footer_note">Estas opciones usan extracción de header/footer de Mistral para ocultarlos del resultado OCR final.</div>
+
+        <div class="row between">
+          <label class="toggle-row">
+            <input type="checkbox" id="googleDocsDocxEnabled">
+            <span data-i18n="google_docs_use_docx">Google Docs: usar .docx</span>
+          </label>
+          <button class="help-btn" type="button" data-help-toggle="helpDocx" aria-expanded="false" aria-label="Ver información sobre formato DOCX" data-i18n-aria-label="docx_help_aria">?</button>
+        </div>
+        <div id="helpDocx" class="help-panel small hidden">
+          <p data-i18n="docx_help_intro"><strong>.docx</strong> suele ser más preciso que PDF. Mistral lee mejor el texto real y las imágenes del documento.</p>
+          <ul>
+            <li data-i18n="native_hidden_text_warning">Problema importante: Mistral también puede leer texto oculto.</li>
+            <li data-i18n="hidden_text_explanation">Texto oculto significa texto que está en el archivo, pero tú no lo ves. Por ejemplo: letra tamaño 1, color blanco, escondida en una esquina.</li>
+            <li data-i18n="hidden_prompt_warning">A veces profesores ponen instrucciones ocultas para perjudicar el uso de IA. Si usas .docx, Mistral puede transcribir eso también.</li>
+            <li data-i18n="docx_size_warning">Además, los .docx pueden pesar más y superar el límite de 50 MB de Mistral.</li>
+          </ul>
+        </div>
+
+        <div class="row between">
+          <label class="toggle-row">
+            <input type="checkbox" id="googleSlidesPptxEnabled">
+            <span data-i18n="google_slides_use_pptx">Google Slides: usar .pptx</span>
+          </label>
+          <button class="help-btn" type="button" data-help-toggle="helpPptx" aria-expanded="false" aria-label="Ver información sobre formato PPTX" data-i18n-aria-label="pptx_help_aria">?</button>
+        </div>
+        <div id="helpPptx" class="help-panel small hidden">
+          <p data-i18n="pptx_help_intro"><strong>.pptx</strong> funciona parecido a .docx: puede ser muy preciso, pero Mistral también puede leer texto oculto.</p>
+          <ul>
+            <li data-i18n="pptx_hidden_text_risk">Tiene el mismo riesgo de instrucciones ocultas que .docx.</li>
+            <li data-i18n="pptx_image_warning">Problema extra: las imágenes pueden quedar con tamaños raros o desajustados en la transcripción.</li>
+            <li data-i18n="native_use_when_needed">Úsalo sólo cuando necesitas mucha precisión y PDF no basta.</li>
+          </ul>
+        </div>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="googleSheetsNativeEnabled">
+          <span data-i18n="google_sheets_use_native">Google Sheets: usar .xlsx o .csv</span>
+        </label>
+        <div class="small" data-i18n="google_native_note">Cada servicio puede exportarse en su formato Office/CSV correspondiente en vez de PDF.</div>
+
+        <div class="indent stack">
+          <div class="field-group">
+            <label for="googleSheetsExportFormat" data-i18n="google_sheets_format">Formato para Google Sheets</label>
+            <select id="googleSheetsExportFormat">
+              <option value="xlsx" data-i18n="use_xlsx">Usar .xlsx</option>
+              <option value="csv" data-i18n="use_csv">Usar .csv</option>
+            </select>
+          </div>
+          <div class="row">
+            <span class="inline">
+              <span data-i18n="xlsx_help_label">Ayuda .xlsx</span>
+              <button class="help-btn" type="button" data-help-toggle="helpXlsx" aria-expanded="false" aria-label="Ver información sobre formato XLSX" data-i18n-aria-label="xlsx_help_aria">?</button>
+            </span>
+            <span class="inline">
+              <span data-i18n="csv_help_label">Ayuda .csv</span>
+              <button class="help-btn" type="button" data-help-toggle="helpCsv" aria-expanded="false" aria-label="Ver información sobre formato CSV" data-i18n-aria-label="csv_help_aria">?</button>
+            </span>
+          </div>
+          <div id="helpXlsx" class="help-panel small hidden">
+            <p data-i18n="xlsx_help_intro"><strong>.xlsx</strong> suele ser mejor que PDF para planillas. Mistral entiende mejor tablas y datos.</p>
+            <ul>
+              <li data-i18n="xlsx_good_for_tables">Es útil si lo importante son números, tablas o estructura de hoja de cálculo.</li>
+              <li data-i18n="xlsx_hidden_text_warning">También puede incluir texto oculto del archivo original, igual que .docx.</li>
+            </ul>
+          </div>
+          <div id="helpCsv" class="help-panel small hidden">
+            <p data-i18n="csv_help_intro"><strong>.csv</strong> puede servir para datos, pero es el formato más delicado.</p>
+            <ul>
+              <li data-i18n="csv_shift_warning">El problema: las tablas pueden quedar corridas. Si una columna se mueve, los datos pueden quedar mal.</li>
+              <li data-i18n="csv_sensitive_warning">Eso puede ser fatal si estás trabajando con notas, montos, fechas o datos importantes.</li>
+              <li data-i18n="csv_use_if_reviewing">Úsalo sólo si ya sabes manejar CSV y vas a revisar el resultado.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="row between">
+        <button id="save" class="primary" type="button" data-i18n="save">Guardar</button>
+        <div id="msg" class="small message" aria-live="polite"></div>
+      </section>
+
+      <p class="small">
+        <span data-i18n="file_access_note">Nota: si vas a abrir PDFs locales (file://), en chrome://extensions habilita “Permitir el acceso a URLs de archivos” para esta extensión.</span>
+      </p>
+    </main>
+
+    <script src="i18n.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

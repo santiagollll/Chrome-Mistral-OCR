@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title data-i18n="extension_action_title">Mistral OCR</title>
+    <link rel="stylesheet" href="styles/mistral-ui.css">
+  </head>
+  <body class="popup-page">
+    <main class="popup-shell">
+      <header class="popup-header">
+        <div class="popup-title">
+          <h1 class="popup-brand" data-i18n="extension_action_title">Mistral OCR</h1>
+        </div>
+        <button id="headerOpenOptions" class="icon-button subtle" type="button" aria-label="Configure" data-i18n-aria-label="configure">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19.14 12.94a7.96 7.96 0 0 0 .05-.94 7.96 7.96 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.4 7.4 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.49-.42h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.96 7.96 0 0 0-.05.94c0 .32.02.63.05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.72 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.84a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </header>
+
+      <div id="status" class="small status-line" aria-live="polite"></div>
+
+      <section id="setupGuide" class="panel setup-guide hidden" aria-label="First-use guide" data-i18n-aria-label="setup_guide_aria">
+        <div>
+          <div class="eyebrow" data-i18n="first_use">First use</div>
+          <h2 data-i18n="popup_setup_title">Set up your Mistral API key</h2>
+          <p data-i18n="popup_setup_body">You need an API key to transcribe documents with OCR.</p>
+        </div>
+        <ol>
+          <li data-i18n="setup_step_create_key">Create an API key in Mistral Console.</li>
+          <li data-i18n="setup_step_paste_key">Paste it in Options, under API key 1.</li>
+          <li data-i18n="setup_step_save_key">Save and reopen this popup.</li>
+        </ol>
+        <div class="actions">
+          <button id="setupOpenOptions" class="primary" type="button" data-i18n="configure_api_key">Configure API key</button>
+          <a class="button subtle" href="https://console.mistral.ai/" target="_blank" rel="noopener noreferrer" data-i18n="open_mistral_console">Open Mistral Console</a>
+        </div>
+      </section>
+
+      <section id="controls" class="panel resource-card" aria-label="OCR controls" data-i18n-aria-label="ocr_controls_aria">
+        <div class="resource-status">
+          <div class="small" data-i18n="current_resource">Current resource</div>
+          <div id="resourceInfo"></div>
+        </div>
+
+        <div id="googleFormatSwitch" class="format-switch hidden">
+          <div class="format-switch-title small" data-i18n="format_for_transcription">Format to use for this transcription</div>
+          <div id="googleFormatOptions" class="format-options"></div>
+        </div>
+
+        <div id="ocrControls" class="row">
+          <button id="btnRun" class="primary" type="button" data-i18n="run_ocr">Transcribe (OCR)</button>
+          <label class="inline">
+            <input type="checkbox" id="chkImages" checked>
+            <span data-i18n="download_images">Download images</span>
+          </label>
+          <label id="apiKeySelectWrap" class="inline hidden">
+            <span>API key</span>
+            <select id="apiKeySelect"></select>
+          </label>
+        </div>
+
+        <div id="jobBox" class="small hidden" aria-live="polite">
+          <div><strong data-i18n="ocr_in_progress">OCR in progress</strong></div>
+          <div id="jobStatus"></div>
+          <button id="btnCancelJob" class="danger" type="button" data-i18n="cancel">Cancel</button>
+        </div>
+
+        <div id="existInfo" class="small"></div>
+        <div class="small">
+          <span data-i18n="api_key_label">API key</span>: <span id="apiKeyStatus"></span> | <a id="openOptions" href="#" data-i18n="configure">Configure</a>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Saved transcriptions" data-i18n-aria-label="saved_transcriptions_aria">
+        <div class="section-title">
+          <h2 data-i18n="saved_transcriptions">Saved transcriptions</h2>
+          <a class="small" href="transcriptions.html" target="_blank" rel="noopener noreferrer" data-i18n="view_all">View all</a>
+        </div>
+        <div id="list"></div>
+      </section>
+    </main>
+
+    <script src="i18n.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

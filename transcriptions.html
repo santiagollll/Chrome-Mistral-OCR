@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title data-i18n="transcriptions_page_title">Transcripciones - Mistral OCR</title>
+    <link rel="stylesheet" href="styles/mistral-ui.css">
+  </head>
+  <body class="transcriptions-page">
+    <main class="app-shell transcriptions-shell">
+      <header class="app-header">
+        <div>
+          <div class="eyebrow" data-i18n="local_archive">Archivo local</div>
+          <h1 data-i18n="saved_transcriptions">Transcripciones guardadas</h1>
+          <p data-i18n="transcriptions_subtitle">Busca por nombre, URL, SHA, tipo o metadatos del OCR.</p>
+        </div>
+        <a class="button subtle" href="options.html" data-i18n="back_to_settings">Volver a configuración</a>
+      </header>
+
+      <div id="status" class="small status-line" aria-live="polite"></div>
+
+      <label class="search">
+        <span class="small" data-i18n="search_transcriptions">Buscar transcripciones</span>
+        <input id="searchBox" type="search" placeholder="Nombre, URL, SHA o tipo" data-i18n-placeholder="search_placeholder">
+      </label>
+
+      <section id="list" class="transcription-list" aria-label="Lista de transcripciones" data-i18n-aria-label="transcription_list_aria"></section>
+    </main>
+
+    <script src="i18n.js"></script>
+    <script src="transcriptions.js"></script>
+  </body>
+</html>

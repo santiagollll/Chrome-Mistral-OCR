@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title data-i18n="preview_page_title">Preview/Edit - Mistral OCR</title>
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+    <link rel="stylesheet" href="styles/mistral-ui.css">
+  </head>
+  <body class="preview-page">
+    <header class="topbar">
+      <div class="title">
+        <div class="eyebrow">Preview/Edit</div>
+        <h1 id="title">Preview/Edit</h1>
+        <div id="meta" class="meta"></div>
+        <div id="confidenceSummary" class="confidence-summary"></div>
+      </div>
+      <nav class="actions" aria-label="Acciones de transcripción" data-i18n-aria-label="transcription_actions_aria">
+        <a class="button subtle" href="transcriptions.html" data-i18n="history">Historial</a>
+        <button id="saveMd" type="button" hidden data-i18n="save_changes">Guardar cambios</button>
+        <button id="copyRaw" type="button" data-i18n="copy_markdown">Copiar markdown</button>
+        <button id="exportMd" type="button" data-i18n="export_markdown">Exportar markdown</button>
+        <button id="exportPdf" type="button" data-i18n="export_pdf">Exportar PDF</button>
+        <button id="exportImages" type="button" data-i18n="export_images">Exportar imágenes</button>
+      </nav>
+    </header>
+
+    <main class="preview-main">
+      <div id="status" class="small status-line" aria-live="polite"></div>
+
+      <section id="splitMode" class="split">
+        <article class="panel">
+          <h2 class="split-title">Markdown</h2>
+          <div id="rawEditor" class="viewer raw" contenteditable="true" spellcheck="false"></div>
+        </article>
+        <article class="panel">
+          <h2 class="split-title" data-i18n="rendered">Renderizado</h2>
+          <div id="splitRendered" class="viewer markdown-body"></div>
+        </article>
+      </section>
+    </main>
+
+    <div id="confidencePopover" class="confidence-popover" role="dialog" aria-live="polite">
+      <div id="confidencePopoverText"></div>
+      <div class="popover-actions">
+        <button id="confidenceKeep" type="button" data-i18n="keep">Conservar</button>
+      </div>
+    </div>
+
+    <script src="vendor/marked/marked.umd.js"></script>
+    <script src="vendor/dompurify/purify.min.js"></script>
+    <script src="vendor/katex/katex.min.js"></script>
+    <script src="vendor/katex/auto-render.min.js"></script>
+    <script src="i18n.js"></script>
+    <script src="preview.js"></script>
+  </body>
+</html>

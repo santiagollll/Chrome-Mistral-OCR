@@ -1,0 +1,882 @@
+{
+  "extension_name": {
+    "message": "Mistral OCR for Chrome"
+  },
+  "extension_description": {
+    "message": "OCR per documenti e immagini in Google Chrome con Mistral."
+  },
+  "extension_action_title": {
+    "message": "Mistral OCR"
+  },
+  "popup_title": {
+    "message": "Trascrivi scheda"
+  },
+  "refresh": {
+    "message": "Aggiorna"
+  },
+  "first_use": {
+    "message": "Primo utilizzo"
+  },
+  "setup_guide_aria": {
+    "message": "First-use guide"
+  },
+  "popup_setup_title": {
+    "message": "Set up your Mistral API key"
+  },
+  "popup_setup_body": {
+    "message": "You need an API key to transcribe documents with OCR."
+  },
+  "setup_step_create_key": {
+    "message": "Create an API key in Mistral Console."
+  },
+  "setup_step_paste_key": {
+    "message": "Paste it in Options, under API key 1."
+  },
+  "setup_step_save_key": {
+    "message": "Save and reopen this popup."
+  },
+  "configure_api_key": {
+    "message": "Configura API key"
+  },
+  "open_mistral_console": {
+    "message": "Apri Mistral Console"
+  },
+  "ocr_controls_aria": {
+    "message": "OCR controls"
+  },
+  "current_resource": {
+    "message": "Risorsa corrente"
+  },
+  "format_for_transcription": {
+    "message": "Format to use for this transcription"
+  },
+  "run_ocr": {
+    "message": "Trascrivi (OCR)"
+  },
+  "download_images": {
+    "message": "Scarica immagini"
+  },
+  "cancel": {
+    "message": "Annulla"
+  },
+  "api_key_label": {
+    "message": "API key"
+  },
+  "configure": {
+    "message": "Configura"
+  },
+  "saved_transcriptions_aria": {
+    "message": "Saved transcriptions"
+  },
+  "saved_transcriptions": {
+    "message": "Trascrizioni salvate"
+  },
+  "view_all": {
+    "message": "Vedi tutte"
+  },
+  "settings": {
+    "message": "Impostazioni"
+  },
+  "options_page_title": {
+    "message": "Options - Mistral OCR"
+  },
+  "options_subtitle": {
+    "message": "Manage local credentials, export, and advanced OCR options."
+  },
+  "view_transcriptions": {
+    "message": "Vedi trascrizioni"
+  },
+  "options_setup_title": {
+    "message": "Connect Mistral OCR with your API key"
+  },
+  "options_setup_body": {
+    "message": "The extension runs locally in Chrome, but OCR uses your Mistral account."
+  },
+  "options_setup_step_open": {
+    "message": "Open Mistral Console and create an API key."
+  },
+  "options_setup_step_paste": {
+    "message": "Paste that key into API key 1."
+  },
+  "options_setup_step_save": {
+    "message": "Click Save."
+  },
+  "options_setup_step_run": {
+    "message": "Open a compatible PDF, document, or image and use Transcribe (OCR) from the popup."
+  },
+  "api_keys_aria": {
+    "message": "API keys"
+  },
+  "primary_credential": {
+    "message": "Primary credential"
+  },
+  "optional_credential": {
+    "message": "Optional credential"
+  },
+  "visible_name": {
+    "message": "Visible name"
+  },
+  "key": {
+    "message": "Key"
+  },
+  "show": {
+    "message": "Show"
+  },
+  "hide": {
+    "message": "Hide"
+  },
+  "stored_locally_note": {
+    "message": "Stored in this extension's local Chrome storage."
+  },
+  "api_key_2_help_aria": {
+    "message": "View information about API key 2"
+  },
+  "api_key_2_help_intro": {
+    "message": "The second API key lets you switch quickly between two Mistral accounts or profiles from the popup."
+  },
+  "api_key_2_help_free": {
+    "message": "Mistral's free plan may use your documents to improve its models. That means less privacy."
+  },
+  "api_key_2_help_paid": {
+    "message": "Mistral's paid plan can be configured not to use your documents for training. That gives more privacy."
+  },
+  "api_key_2_help_practical": {
+    "message": "Practical idea: use free when privacy matters less, and paid when the document is sensitive."
+  },
+  "api_key_2_help_empty": {
+    "message": "If this key is empty, the popup will not show the API key selector."
+  },
+  "optional": {
+    "message": "Optional"
+  },
+  "secondary_empty_note": {
+    "message": "If this key is empty, the popup will not show a selector."
+  },
+  "export": {
+    "message": "Export"
+  },
+  "export_aria": {
+    "message": "Export"
+  },
+  "files_and_images": {
+    "message": "Files and images"
+  },
+  "image_export": {
+    "message": "Image export"
+  },
+  "download_images_zip": {
+    "message": "Download images as ZIP"
+  },
+  "download_images_separate": {
+    "message": "Download images separately"
+  },
+  "preview_edit_aria": {
+    "message": "Preview and editing"
+  },
+  "result_editing": {
+    "message": "Result editing"
+  },
+  "disable_preview_autosave": {
+    "message": "Disable autosave in preview mode"
+  },
+  "disable_preview_autosave_note": {
+    "message": "When enabled, Preview/Edit will show the Save changes button."
+  },
+  "experimental": {
+    "message": "Experimental"
+  },
+  "experimental_options_aria": {
+    "message": "Experimental options"
+  },
+  "extraction_google_workspace": {
+    "message": "Extraction and Google Workspace"
+  },
+  "remove_document_header": {
+    "message": "Remove document HEADER"
+  },
+  "remove_document_footer": {
+    "message": "Remove document FOOTER"
+  },
+  "header_footer_note": {
+    "message": "These options use Mistral header/footer extraction to hide them from the final OCR result."
+  },
+  "google_docs_use_docx": {
+    "message": "Google Docs: use .docx"
+  },
+  "docx_help_aria": {
+    "message": "View information about DOCX format"
+  },
+  "docx_help_intro": {
+    "message": ".docx is often more accurate than PDF. Mistral reads the document's real text and images better."
+  },
+  "native_hidden_text_warning": {
+    "message": "Important issue: Mistral can also read hidden text."
+  },
+  "hidden_text_explanation": {
+    "message": "Hidden text means text that exists in the file but you cannot see, such as size 1 white text hidden in a corner."
+  },
+  "hidden_prompt_warning": {
+    "message": "Sometimes hidden instructions are added to discourage AI use. If you use .docx, Mistral may transcribe them too."
+  },
+  "docx_size_warning": {
+    "message": ".docx files can also be larger and exceed Mistral's 50 MB limit."
+  },
+  "google_slides_use_pptx": {
+    "message": "Google Slides: use .pptx"
+  },
+  "pptx_help_aria": {
+    "message": "View information about PPTX format"
+  },
+  "pptx_help_intro": {
+    "message": ".pptx works similarly to .docx: it can be very accurate, but Mistral can also read hidden text."
+  },
+  "pptx_hidden_text_risk": {
+    "message": "It has the same hidden-instruction risk as .docx."
+  },
+  "pptx_image_warning": {
+    "message": "Extra issue: images may appear with odd sizes or layout in the transcription."
+  },
+  "native_use_when_needed": {
+    "message": "Use it only when you need high accuracy and PDF is not enough."
+  },
+  "google_sheets_use_native": {
+    "message": "Google Sheets: use .xlsx or .csv"
+  },
+  "google_native_note": {
+    "message": "Each service can export to its Office/CSV format instead of PDF."
+  },
+  "google_sheets_format": {
+    "message": "Format for Google Sheets"
+  },
+  "use_xlsx": {
+    "message": "Use .xlsx"
+  },
+  "use_csv": {
+    "message": "Use .csv"
+  },
+  "xlsx_help_label": {
+    "message": ".xlsx help"
+  },
+  "csv_help_label": {
+    "message": ".csv help"
+  },
+  "xlsx_help_aria": {
+    "message": "View information about XLSX format"
+  },
+  "csv_help_aria": {
+    "message": "View information about CSV format"
+  },
+  "xlsx_help_intro": {
+    "message": ".xlsx is often better than PDF for spreadsheets. Mistral understands tables and data better."
+  },
+  "xlsx_good_for_tables": {
+    "message": "Useful when numbers, tables, or spreadsheet structure matter."
+  },
+  "xlsx_hidden_text_warning": {
+    "message": "It may also include hidden text from the original file, just like .docx."
+  },
+  "csv_help_intro": {
+    "message": ".csv can help with data, but it is the most fragile format."
+  },
+  "csv_shift_warning": {
+    "message": "Problem: tables can shift. If one column moves, the data can be wrong."
+  },
+  "csv_sensitive_warning": {
+    "message": "That can be critical when working with grades, amounts, dates, or important data."
+  },
+  "csv_use_if_reviewing": {
+    "message": "Use it only if you know how to handle CSV and will review the result."
+  },
+  "save": {
+    "message": "Salva"
+  },
+  "file_access_note": {
+    "message": "Note: to open local PDFs (file://), enable \"Allow access to file URLs\" for this extension in chrome://extensions."
+  },
+  "transcriptions_page_title": {
+    "message": "Transcriptions - Mistral OCR"
+  },
+  "local_archive": {
+    "message": "Local archive"
+  },
+  "transcriptions_subtitle": {
+    "message": "Search by name, URL, SHA, type, or OCR metadata."
+  },
+  "back_to_settings": {
+    "message": "Back to settings"
+  },
+  "search_transcriptions": {
+    "message": "Search transcriptions"
+  },
+  "search_placeholder": {
+    "message": "Name, URL, SHA, or type"
+  },
+  "transcription_list_aria": {
+    "message": "Transcription list"
+  },
+  "preview_page_title": {
+    "message": "Preview/Edit - Mistral OCR"
+  },
+  "transcription_actions_aria": {
+    "message": "Transcription actions"
+  },
+  "history": {
+    "message": "History"
+  },
+  "save_changes": {
+    "message": "Save changes"
+  },
+  "copy_markdown": {
+    "message": "Copy markdown"
+  },
+  "export_markdown": {
+    "message": "Export markdown"
+  },
+  "export_pdf": {
+    "message": "Export PDF"
+  },
+  "export_images": {
+    "message": "Export images"
+  },
+  "rendered": {
+    "message": "Rendered"
+  },
+  "keep": {
+    "message": "Keep"
+  },
+  "loading": {
+    "message": "Caricamento..."
+  },
+  "refreshing": {
+    "message": "Aggiornamento..."
+  },
+  "error_initializing": {
+    "message": "Error initializing"
+  },
+  "api_key_configured": {
+    "message": "configurata"
+  },
+  "api_key_configured_with_label": {
+    "message": "configured ($LABEL$)",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "api_key_not_configured": {
+    "message": "non configurata"
+  },
+  "no_previous_transcriptions": {
+    "message": "No previous transcriptions."
+  },
+  "updated_at": {
+    "message": "Updated: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "created_at": {
+    "message": "Created $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "copy_content": {
+    "message": "Copia contenuto"
+  },
+  "showing_recent_transcriptions": {
+    "message": "Showing $COUNT$ of $TOTAL$ recent transcriptions. Open \"View all\" to search, export, or delete.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "current_tab_not_supported": {
+    "message": "Current tab: not supported."
+  },
+  "current_tab_resource": {
+    "message": "Current tab: $RESOURCE$.",
+    "placeholders": {
+      "resource": {
+        "content": "$1"
+      }
+    }
+  },
+  "embedded_pdf_detected": {
+    "message": "A single embedded PDF was detected on this page."
+  },
+  "open_compatible_resource": {
+    "message": "Open a compatible document or image to use OCR in this tab."
+  },
+  "no_ocr_url_detected": {
+    "message": "No OCR-able URL detected."
+  },
+  "existing_other_export_format": {
+    "message": " in another export format"
+  },
+  "ocr_exists_for_document": {
+    "message": "OCR already exists for this document$HINT$.",
+    "placeholders": {
+      "hint": {
+        "content": "$1"
+      }
+    }
+  },
+  "no_previous_ocr_for_document": {
+    "message": "No previous OCR for this document."
+  },
+  "processing": {
+    "message": "Elaborazione..."
+  },
+  "overwrite": {
+    "message": "Sovrascrivi"
+  },
+  "starting_overwrite_background": {
+    "message": "Starting background overwrite..."
+  },
+  "starting_ocr_background": {
+    "message": "Starting background OCR..."
+  },
+  "error_in_ocr": {
+    "message": "OCR error"
+  },
+  "resource_already_processed_copying": {
+    "message": "This resource was already processed. Copying markdown..."
+  },
+  "ocr_background_started": {
+    "message": "Background OCR started. You can close this popup."
+  },
+  "could_not_delete": {
+    "message": "Could not delete"
+  },
+  "deleted_from_list": {
+    "message": "Deleted from the list."
+  },
+  "could_not_get_content": {
+    "message": "Could not get content"
+  },
+  "content_copied": {
+    "message": "Contenuto copiato negli appunti."
+  },
+  "content_copied_fallback": {
+    "message": "Content copied (fallback)."
+  },
+  "could_not_export_markdown": {
+    "message": "Could not export markdown"
+  },
+  "markdown_exported": {
+    "message": "Markdown esportato."
+  },
+  "could_not_export_images": {
+    "message": "Could not export images"
+  },
+  "images_exported": {
+    "message": "Immagini esportate."
+  },
+  "could_not_cancel_ocr": {
+    "message": "Could not cancel OCR"
+  },
+  "canceling_background_ocr": {
+    "message": "Canceling background OCR..."
+  },
+  "could_not_change_active_api_key": {
+    "message": "Could not change the active API key"
+  },
+  "updating_format": {
+    "message": "Updating format..."
+  },
+  "could_not_check_previous_ocr_format": {
+    "message": "Could not check previous OCR for this format"
+  },
+  "saved": {
+    "message": "Saved."
+  },
+  "preferences_saved": {
+    "message": "Preferences saved."
+  },
+  "delete": {
+    "message": "Elimina"
+  },
+  "no_saved_transcriptions": {
+    "message": "No saved transcriptions."
+  },
+  "pages_count": {
+    "message": "$COUNT$ pages",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "images_count": {
+    "message": "$COUNT$ images",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "source": {
+    "message": "Source"
+  },
+  "no_registered_url": {
+    "message": "No registered URL"
+  },
+  "could_not_load_list": {
+    "message": "Could not load the list"
+  },
+  "no_date": {
+    "message": "no date"
+  },
+  "unknown": {
+    "message": "sconosciuto"
+  },
+  "type_value": {
+    "message": "Type: $TYPE$",
+    "placeholders": {
+      "type": {
+        "content": "$1"
+      }
+    }
+  },
+  "ocr_confidence_percent": {
+    "message": "OCR confidence: $PERCENT$%",
+    "placeholders": {
+      "percent": {
+        "content": "$1"
+      }
+    }
+  },
+  "low_confidence_word_count": {
+    "message": "Low-confidence word count:"
+  },
+  "keep_all_words": {
+    "message": "Keep all words"
+  },
+  "word_kept": {
+    "message": "Word kept; it will no longer be highlighted."
+  },
+  "could_not_update_word": {
+    "message": "Could not update the word."
+  },
+  "no_pending_words": {
+    "message": "No pending words to keep."
+  },
+  "all_marked_words_kept": {
+    "message": "All marked words were kept."
+  },
+  "could_not_keep_all_words": {
+    "message": "Could not keep all words."
+  },
+  "markdown_copied": {
+    "message": "Markdown copied to clipboard."
+  },
+  "preparing_pdf": {
+    "message": "Preparing PDF..."
+  },
+  "pdf_exported": {
+    "message": "PDF exported."
+  },
+  "could_not_export_pdf": {
+    "message": "Could not export PDF."
+  },
+  "saving_changes": {
+    "message": "Saving changes..."
+  },
+  "could_not_save_changes": {
+    "message": "Could not save changes."
+  },
+  "changes_saved": {
+    "message": "Changes saved."
+  },
+  "could_not_auto_save_changes": {
+    "message": "Could not save changes automatically."
+  },
+  "changes_auto_saved": {
+    "message": "Changes saved automatically."
+  },
+  "missing_transcription_hash": {
+    "message": "Missing transcription hash."
+  },
+  "loading_preview": {
+    "message": "Loading preview..."
+  },
+  "could_not_load_preview": {
+    "message": "Could not load preview."
+  },
+  "resource_image": {
+    "message": "Immagine"
+  },
+  "resource_image_ext": {
+    "message": "Image $EXT$",
+    "placeholders": {
+      "ext": {
+        "content": "$1"
+      }
+    }
+  },
+  "resource_document": {
+    "message": "Documento"
+  },
+  "resource_document_ext": {
+    "message": "Document $EXT$",
+    "placeholders": {
+      "ext": {
+        "content": "$1"
+      }
+    }
+  },
+  "resource_embedded_pdf": {
+    "message": "Embedded PDF"
+  },
+  "notification_ocr_canceled_title": {
+    "message": "OCR annullato"
+  },
+  "ocr_canceled_background": {
+    "message": "Background OCR was canceled."
+  },
+  "canceled_by_user": {
+    "message": "Canceled by the user."
+  },
+  "step_canceling": {
+    "message": "Canceling"
+  },
+  "error_no_active_tab": {
+    "message": "There is no active tab."
+  },
+  "step_resolving_resource": {
+    "message": "Resolving resource"
+  },
+  "preparing_resource": {
+    "message": "Preparing resource..."
+  },
+  "error_no_ocrable_resource": {
+    "message": "No OCR-able resource was detected (compatible document or image)."
+  },
+  "capturing_initial_resource": {
+    "message": "Capturing initial resource..."
+  },
+  "step_downloading_resource": {
+    "message": "Downloading resource"
+  },
+  "downloading_resource_from_tab": {
+    "message": "Downloading resource from the source tab..."
+  },
+  "step_calculating_hash": {
+    "message": "Calculating hash"
+  },
+  "calculating_document_identity": {
+    "message": "Calculating document identity..."
+  },
+  "step_running_ocr": {
+    "message": "Running OCR"
+  },
+  "error_ocr_already_running": {
+    "message": "An OCR job is already running. Wait for it to finish or cancel it."
+  },
+  "error_could_not_start_background_ocr": {
+    "message": "Could not start background OCR."
+  },
+  "ocr_canceled": {
+    "message": "OCR canceled."
+  },
+  "error_could_not_start_ocr": {
+    "message": "Could not start OCR."
+  },
+  "notification_ocr_failed_title": {
+    "message": "OCR non riuscito"
+  },
+  "step_saving_result": {
+    "message": "Saving result"
+  },
+  "persisting_transcription_images": {
+    "message": "Saving transcription and images..."
+  },
+  "notification_ocr_complete_title": {
+    "message": "OCR completato"
+  },
+  "notification_ocr_complete_message": {
+    "message": "$NAME$ is ready to copy or export.",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "error_background_ocr_failed": {
+    "message": "Background OCR failed."
+  },
+  "error_pdf_temp_view_timeout": {
+    "message": "Timeout loading the temporary PDF view."
+  },
+  "error_missing_rendered_html": {
+    "message": "Missing rendered HTML to export."
+  },
+  "error_open_pdf_temp_view": {
+    "message": "Could not open the temporary PDF view."
+  },
+  "error_chrome_no_pdf_data": {
+    "message": "Chrome did not return PDF data."
+  },
+  "source_tab_closed": {
+    "message": "The source tab was closed."
+  },
+  "error_unsupported_message": {
+    "message": "Unsupported message."
+  },
+  "error_api_key_missing": {
+    "message": "API key non configurata. Vai a Opzioni."
+  },
+  "error_offscreen_not_supported": {
+    "message": "Chrome does not support offscreen documents in this environment."
+  },
+  "offscreen_justification": {
+    "message": "Keep OCR running in the background and process blobs without depending on the popup."
+  },
+  "error_uploading_to_mistral": {
+    "message": "Error uploading file to Mistral: $STATUS$ $DETAIL$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      },
+      "detail": {
+        "content": "$2"
+      }
+    }
+  },
+  "error_ocr": {
+    "message": "OCR error: $STATUS$ $DETAIL$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      },
+      "detail": {
+        "content": "$2"
+      }
+    }
+  },
+  "error_ocr_image": {
+    "message": "OCR error (image): $STATUS$ $DETAIL$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      },
+      "detail": {
+        "content": "$2"
+      }
+    }
+  },
+  "error_download_resource_http": {
+    "message": "Could not download the resource. HTTP $STATUS$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "error_export_file_google_docs": {
+    "message": "Could not export the file from Google Docs."
+  },
+  "error_export_pdf_google_docs": {
+    "message": "Could not export the PDF from Google Docs."
+  },
+  "error_export_file_google_slides": {
+    "message": "Could not export the file from Google Slides."
+  },
+  "error_export_pdf_google_slides": {
+    "message": "Could not export the PDF from Google Slides."
+  },
+  "error_export_file_google_sheets": {
+    "message": "Could not export the file from Google Sheets."
+  },
+  "error_export_pdf_google_sheets": {
+    "message": "Could not export the PDF from Google Sheets."
+  },
+  "step_uploading_to_mistral": {
+    "message": "Uploading to Mistral"
+  },
+  "uploading_file_to_mistral": {
+    "message": "Uploading file to Mistral..."
+  },
+  "error_upload_response_missing_file_id": {
+    "message": "Upload response has no file id."
+  },
+  "waiting_mistral_ocr_response": {
+    "message": "Waiting for Mistral OCR response..."
+  },
+  "processing_image_in_mistral": {
+    "message": "Processing image in Mistral..."
+  },
+  "error_unsupported_background_resource": {
+    "message": "Unsupported background resource type."
+  },
+  "error_offscreen_ocr_running": {
+    "message": "An offscreen OCR job is already running."
+  },
+  "canceled": {
+    "message": "Canceled."
+  },
+  "error_unsupported_offscreen_message": {
+    "message": "Unsupported offscreen message."
+  },
+  "error_open_indexeddb": {
+    "message": "Could not open IndexedDB."
+  },
+  "error_indexeddb_transaction_failed": {
+    "message": "IndexedDB transaction failed."
+  },
+  "error_indexeddb_transaction_aborted": {
+    "message": "IndexedDB transaction aborted."
+  },
+  "error_ocr_entry_not_found": {
+    "message": "OCR entry not found."
+  },
+  "error_ocr_not_found": {
+    "message": "OCR not found."
+  },
+  "error_could_not_read_ocr": {
+    "message": "Could not read OCR."
+  },
+  "error_no_stored_content": {
+    "message": "No stored content."
+  },
+  "error_missing_word_identifier": {
+    "message": "Missing word identifier."
+  },
+  "error_missing_word_identifiers": {
+    "message": "Missing word identifiers."
+  },
+  "error_ocr_has_no_images": {
+    "message": "This OCR has no stored images."
+  },
+  "error_iframe_timeout": {
+    "message": "Timeout loading iframe"
+  },
+  "error_iframe_loading": {
+    "message": "Error loading iframe"
+  },
+  "error_invalid_google_docs_page": {
+    "message": "This is not a valid Google Docs page."
+  },
+  "error_invalid_google_slides_page": {
+    "message": "This is not a valid Google Slides page."
+  },
+  "error_invalid_google_sheets_page": {
+    "message": "This is not a valid Google Sheets page."
+  },
+  "error_unsupported_google_document_type": {
+    "message": "Unsupported Google document type."
+  },
+  "ocr_in_progress": {
+    "message": "OCR in corso"
+  }
+}
