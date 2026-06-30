@@ -44,12 +44,11 @@ Mistral AI の利用規約: https://mistral.ai/terms
 
 ## 対応フォーマット
 
-- PDF。
-- 画像: `jpg`, `jpeg`, `png`, `avif`, `tif`, `tiff`, `gif`, `heic`, `heif`, `bmp`, `webp`。
-- 文書/ファイル: `docx`, `doc`, `pptx`, `ppt`, `xlsx`, `csv`, `txt`, `epub`, `xml`, `rtf`, `odt`, `bib`, `fb2`, `ipynb`, `tex`, `opml`, `man`。
-- Google Docs、Slides、Sheets はデフォルトで PDF としてエクスポートされ、オプションでネイティブ形式も使用できます。
+主に、Chrome によってレンダリング表示される PDF ドキュメントに対応しています。
 
-Google のネイティブ形式は精度を向上させることがありますが、元ファイル内の隠しテキストを露出させる可能性もあります。
+Google Docs、Google Slides、Google Sheets はデフォルトで PDF としてエクスポートされます。Google ネイティブ形式（docx; pptx; xlsx; csv）も Options から有効にできます。ネイティブ形式は OCR の精度を向上させる可能性がありますが、元ファイルに含まれる非表示テキストを露出させる可能性もあります。
+
+さらに、この拡張機能は、Chrome が新しいタブで個別にレンダリング表示する任意の画像にも対応できます。対応形式には、jpg、jpeg、png、avif、gif、bmp、webp が含まれます。
 
 ## トラブルシューティング
 
