@@ -44,13 +44,11 @@ Wichtig: Um lokale PDFs oder Dateien mit `file://` zu verwenden, aktiviere `Zugr
 
 ## Unterstützte Formate
 
-- PDF.
-- Bilder: `jpg`, `jpeg`, `png`, `avif`, `tif`, `tiff`, `gif`, `heic`, `heif`, `bmp`, `webp`.
-- Dokumente/Dateien: `docx`, `doc`, `pptx`, `ppt`, `xlsx`, `csv`, `txt`, `epub`, `xml`, `rtf`, `odt`, `bib`, `fb2`, `ipynb`, `tex`, `opml`, `man`.
-- Google Docs, Slides und Sheets exportieren standardmäßig als PDF; native Formate sind optional in den Optionen verfügbar.
+Unterstützt hauptsächlich PDF-Dokumente, die von Chrome gerendert angezeigt werden.
 
-Native Google-Formate können die Genauigkeit verbessern, aber auch versteckten Text aus der Originaldatei sichtbar machen.
+Google Docs, Google Slides und Google Sheets werden standardmäßig als PDF exportiert. Native Google-Formate (docx; pptx; xlsx; csv) können ebenfalls in den Optionen aktiviert werden. Native Formate können die OCR-Genauigkeit verbessern, können aber auch versteckten Text offenlegen, der in der Originaldatei enthalten ist.
 
+Zusätzlich kann die Erweiterung mit jedem Bild funktionieren, das Chrome einzeln in einem neuen Tab rendert. Diese Formate umfassen: jpg, jpeg, png, avif, gif, bmp und webp.
 ## Fehlerbehebung
 
 Wenn OCR nicht startet, prüfe, ob ein API-Schlüssel gespeichert ist und ob der aktive Tab eine kompatible Ressource enthält. Wenn bereits ein Hintergrund-OCR läuft, warte auf das Ende oder brich ihn ab.
