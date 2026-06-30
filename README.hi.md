@@ -44,12 +44,11 @@ Mistral AI की शर्तें: https://mistral.ai/terms
 
 ## समर्थित फ़ॉर्मैट
 
-- PDF।
-- Images: `jpg`, `jpeg`, `png`, `avif`, `tif`, `tiff`, `gif`, `heic`, `heif`, `bmp`, `webp`।
-- Documents/files: `docx`, `doc`, `pptx`, `ppt`, `xlsx`, `csv`, `txt`, `epub`, `xml`, `rtf`, `odt`, `bib`, `fb2`, `ipynb`, `tex`, `opml`, `man`।
-- Google Docs, Slides और Sheets default रूप से PDF में export होते हैं, और Options से optional native formats उपलब्ध हैं।
+मुख्य रूप से उन PDF दस्तावेज़ों का समर्थन करता है जिन्हें Chrome रेंडर करके दिखाता है।
 
-Google native formats accuracy बढ़ा सकते हैं, लेकिन वे original file के hidden text को भी उजागर कर सकते हैं।
+Google Docs, Google Slides और Google Sheets डिफ़ॉल्ट रूप से PDF के रूप में एक्सपोर्ट किए जाते हैं। Google के native formats (docx; pptx; xlsx; csv) को Options से भी सक्षम किया जा सकता है। Native formats OCR की सटीकता बढ़ा सकते हैं, लेकिन वे मूल फ़ाइल में मौजूद छिपे हुए टेक्स्ट को भी उजागर कर सकते हैं।
+
+इसके अतिरिक्त, यह एक्सटेंशन किसी भी ऐसी इमेज के साथ काम कर सकता है जिसे Chrome एक नई टैब में अलग से रेंडर करता है। इन फ़ॉर्मैट में शामिल हैं: jpg, jpeg, png, avif, gif, bmp और webp।
 
 ## समस्या निवारण
 
