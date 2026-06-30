@@ -44,12 +44,11 @@ Mistral AI 条款: https://mistral.ai/terms
 
 ## 支持的格式
 
-- PDF。
-- 图像: `jpg`, `jpeg`, `png`, `avif`, `tif`, `tiff`, `gif`, `heic`, `heif`, `bmp`, `webp`。
-- 文档/文件: `docx`, `doc`, `pptx`, `ppt`, `xlsx`, `csv`, `txt`, `epub`, `xml`, `rtf`, `odt`, `bib`, `fb2`, `ipynb`, `tex`, `opml`, `man`。
-- Google Docs、Slides 和 Sheets 默认导出为 PDF，也可在 Options 中启用原生格式。
+主要支持由 Chrome 渲染显示的 PDF 文档。
 
-Google 原生格式可能提升精度，但也可能暴露原始文件中的隐藏文本。
+Google Docs、Google Slides 和 Google Sheets 默认会导出为 PDF。也可以在选项中启用 Google 原生格式（docx; pptx; xlsx; csv）。原生格式可能会提高 OCR 准确性，但也可能暴露原始文件中包含的隐藏文本。
+
+此外，该扩展程序也可以处理 Chrome 在新标签页中单独渲染显示的任何图像。这些格式包括：jpg、jpeg、png、avif、gif、bmp 和 webp。
 
 ## 故障排除
 
