@@ -53,7 +53,9 @@ The user can delete saved transcriptions from the extension. The user can also r
 
 For privacy or support inquiries, use the contact channel published in the extension’s Chrome Web Store listing.
 
---
+
+---
+
 
 # Politica de privacidad de Chrome Mistral OCR
 
