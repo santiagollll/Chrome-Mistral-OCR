@@ -44,12 +44,11 @@ Important: to use local PDFs or files with `file://`, enable `Allow access to fi
 
 ## Supported Formats
 
-- PDF.
-- Images: `jpg`, `jpeg`, `png`, `avif`, `tif`, `tiff`, `gif`, `heic`, `heif`, `bmp`, `webp`.
-- Documents/files: `docx`, `doc`, `pptx`, `ppt`, `xlsx`, `csv`, `txt`, `epub`, `xml`, `rtf`, `odt`, `bib`, `fb2`, `ipynb`, `tex`, `opml`, `man`.
-- Google Docs, Slides, and Sheets export as PDF by default, with optional native formats from Options.
+Primarily supports PDF documents that are rendered by Chrome.
 
-Native Google formats can improve accuracy, but they may also expose hidden text in the original file.
+Google Docs, Google Slides, and Google Sheets are exported as PDF by default. Native Google formats (docx; pptx; xlsx; csv) can also be enabled from Options. Native formats may improve OCR accuracy, but they can also expose hidden text contained in the original file.
+
+Additionally, the extension can work with any image that Chrome renders individually in a new tab. These formats include: jpg, jpeg, png, avif, gif, bmp, and webp.
 
 ## Troubleshooting
 
