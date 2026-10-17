@@ -4,6 +4,12 @@
   <img src="assets/banner.png" alt="Mistral OCR" width="100%">
 </p>
 
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/mistral-ocr-for-chrome/laebdeibfaigmdofpbpcbgcmdbopffng">
+    <img src="assets/chrome-web-store.png" alt="Available in the Chrome Web Store" width="220">
+  </a>
+</p>
+
 Chrome extension for transcribing documents and images with Mistral OCR. It runs from the extension popup, stores results locally, and lets you preview, edit, copy, export Markdown, export images, and generate PDF output from the rendered preview.
 
 ## Privacy
