@@ -6,7 +6,9 @@
 
 <p align="center">
   <a href="https://chromewebstore.google.com/detail/mistral-ocr-for-chrome/laebdeibfaigmdofpbpcbgcmdbopffng">
-    <img src="assets/chrome-web-store.png" alt="Available in the Chrome Web Store" width="220">
+    <img src="assets/chrome-web-store.png"
+         alt="Available on Chrome Web Store"
+         width="280">
   </a>
 </p>
 
