@@ -1,11 +1,20 @@
 'use strict';
 
 const statusEl = document.getElementById('status');
+const ocrErrorEl = document.getElementById('ocrError');
+const ocrErrorCodeEl = document.getElementById('ocrErrorCode');
+const ocrErrorDescriptionEl = document.getElementById('ocrErrorDescription');
+const ocrAccessHelpEl = document.getElementById('ocrAccessHelp');
+const ocrAccessReasonEl = document.getElementById('ocrAccessReason');
+const ocrAccessHttpStatusEl = document.getElementById('ocrAccessHttpStatus');
+const ocrAccessMistralCodeEl = document.getElementById('ocrAccessMistralCode');
+const ocrAccessDescriptionEl = document.getElementById('ocrAccessDescription');
 const listEl = document.getElementById('list');
 const btnRun = document.getElementById('btnRun');
 const existInfo = document.getElementById('existInfo');
 const resourceInfoEl = document.getElementById('resourceInfo');
 const apiKeyStatus = document.getElementById('apiKeyStatus');
+const apiKeySummaryEl = document.getElementById('apiKeySummary');
 const openOptions = document.getElementById('openOptions');
 const headerOpenOptions = document.getElementById('headerOpenOptions');
 const setupGuideEl = document.getElementById('setupGuide');
@@ -19,13 +28,30 @@ const jobStatusEl = document.getElementById('jobStatus');
 const btnCancelJob = document.getElementById('btnCancelJob');
 const googleFormatSwitchEl = document.getElementById('googleFormatSwitch');
 const googleFormatOptionsEl = document.getElementById('googleFormatOptions');
+const resourceStatusEl = document.getElementById('resourceStatus');
+const resourceIconEl = document.getElementById('resourceIcon');
+const imagesPreferenceEl = chkImages.closest('label');
+const fileUrlAccessWarningEl = document.getElementById('fileUrlAccessWarning');
+const openFileUrlAccessBtn = document.getElementById('openFileUrlAccess');
 const MAX_POPUP_TRANSCRIPTIONS = 2;
 const tr = window.t || ((key) => key);
+const formatIconAssets = Object.freeze({
+  pdf: 'assets/pdf.png',
+  docx: 'assets/doc.png',
+  pptx: 'assets/ppt.png',
+  xlsx: 'assets/xls.png',
+  csv: 'assets/csv.png'
+});
 
 let current = {
   resourceUrl: null,
   resourceKind: null,
+  resourceFormat: null,
+  resourceOrigin: null,
+  resourceProvider: null,
   resourceLabel: null,
+  resourceDisplayLabel: null,
+  resourceIconUrl: null,
   isOcrable: false,
   embeddedPdfUrl: null,
   exists: { found: false },
@@ -37,14 +63,85 @@ let current = {
   googleExportFormat: 'pdf',
   googleExportOptions: [],
   showGoogleExportFormatSelector: false,
+  fileUrlAccessBlocked: false,
   activeJob: null
 };
 let pollTimer = null;
+
+resourceIconEl.addEventListener('error', () => {
+  resourceIconEl.removeAttribute('src');
+  resourceIconEl.classList.add('hidden');
+});
 
 function setStatus(msg, tone = false) {
   statusEl.textContent = msg || '';
   const statusTone = tone === true ? 'error' : tone;
   statusEl.className = statusTone ? `small status-line ${statusTone}` : 'small status-line';
+}
+
+const accessErrorCategories = new Set([
+  'NO_ACTIVE_USAGE_LIMIT',
+  'RATE_LIMIT_REACHED',
+  'PAYMENT_REQUIRED'
+]);
+
+const accessErrorReasonKeys = {
+  NO_ACTIVE_USAGE_LIMIT: 'ocr_access_reason_no_active_usage_limit',
+  RATE_LIMIT_REACHED: 'ocr_access_reason_rate_limit_reached',
+  PAYMENT_REQUIRED: 'ocr_access_reason_payment_required'
+};
+
+const accessErrorStatusKeys = {
+  NO_ACTIVE_USAGE_LIMIT: 'ocr_access_status_no_active_usage_limit',
+  RATE_LIMIT_REACHED: 'ocr_access_status_rate_limit_reached',
+  PAYMENT_REQUIRED: 'ocr_access_status_payment_required'
+};
+
+function getAccessErrorCategory(notice) {
+  const category = notice?.category || notice?.errorCategory;
+  return accessErrorCategories.has(category) ? category : null;
+}
+
+function clearOcrAccessHelp() {
+  ocrAccessHelpEl.classList.add('hidden');
+  ocrAccessReasonEl.textContent = '';
+  ocrAccessHttpStatusEl.textContent = '';
+  ocrAccessMistralCodeEl.textContent = '';
+  ocrAccessDescriptionEl.textContent = '';
+}
+
+function renderOcrError(notice) {
+  const isError = notice?.level === 'error'
+    || (notice?.code && notice.code !== 'CANCELED' && notice.code !== 'cancelled');
+  if (!isError) {
+    ocrErrorEl.classList.add('hidden');
+    ocrErrorCodeEl.textContent = '';
+    ocrErrorDescriptionEl.textContent = '';
+    clearOcrAccessHelp();
+    return;
+  }
+
+  const category = getAccessErrorCategory(notice);
+  if (category) {
+    ocrErrorEl.classList.add('hidden');
+    ocrErrorCodeEl.textContent = '';
+    ocrErrorDescriptionEl.textContent = '';
+    ocrAccessReasonEl.textContent = tr(accessErrorReasonKeys[category]);
+    ocrAccessHttpStatusEl.textContent = String(notice.httpStatus ?? notice.status ?? '—');
+    ocrAccessMistralCodeEl.textContent = String(notice.mistralCode || '—');
+    ocrAccessDescriptionEl.textContent = String(
+      notice.description || notice.errorDescription || notice.message || tr('error_background_ocr_failed')
+    );
+    ocrAccessHelpEl.classList.remove('hidden');
+    return;
+  }
+
+  clearOcrAccessHelp();
+  ocrErrorCodeEl.textContent = String(notice.code || notice.errorCode || 'OCR_ERROR');
+  ocrErrorDescriptionEl.textContent = String(
+    notice.description || notice.errorDescription || notice.message || tr('error_background_ocr_failed')
+  );
+  ocrErrorEl.classList.remove('hidden');
 }
 
 function escapeHtml(value) {
@@ -88,11 +185,22 @@ function renderList(items) {
 }
 
 function updateResourceInfo() {
-  if (!current.resourceKind || !current.resourceLabel) {
-    resourceInfoEl.textContent = tr('current_tab_not_supported');
+  const hasResource = !!(current.resourceKind && (current.resourceDisplayLabel || current.resourceLabel));
+  resourceStatusEl.classList.toggle('hidden', !hasResource);
+  if (!hasResource) {
+    resourceInfoEl.textContent = '';
+    resourceIconEl.removeAttribute('src');
+    resourceIconEl.classList.add('hidden');
     return;
   }
-  resourceInfoEl.textContent = tr('current_tab_resource', [current.resourceLabel]);
+  resourceInfoEl.textContent = tr('resource_indicator', [current.resourceDisplayLabel || current.resourceLabel]);
+  if (current.resourceIconUrl) {
+    resourceIconEl.src = current.resourceIconUrl;
+    resourceIconEl.classList.remove('hidden');
+  } else {
+    resourceIconEl.removeAttribute('src');
+    resourceIconEl.classList.add('hidden');
+  }
 }
 
 function updateExistInfo() {
@@ -109,11 +217,11 @@ function updateExistInfo() {
     return;
   }
   if (current.exists?.found) {
-    const formatHint = current.exists.matchedUrl && current.exists.matchedUrl !== current.resourceUrl
-      ? tr('existing_other_export_format')
-      : '';
+    const existsMessage = current.resourceOrigin === 'google'
+      ? tr('ocr_exists_for_document_format', [existingFormatLabel()])
+      : tr('ocr_exists_generic');
     existInfo.innerHTML = `
-      ${escapeHtml(tr('ocr_exists_for_document', [formatHint]))}
+      ${escapeHtml(existsMessage)}
       <button id="previewCurrentMd" type="button">Preview/Edit</button>
       <button id="copyCurrentMd" type="button">${escapeHtml(tr('copy_content'))}</button>
     `;
@@ -133,7 +241,7 @@ function updateRunButton() {
     btnRun.textContent = tr('processing');
     return;
   }
-  btnRun.textContent = current.exists?.found ? tr('overwrite') : tr('run_ocr');
+  btnRun.textContent = hasExistingForSelectedFormat() ? tr('overwrite') : tr('run_ocr');
 }
 
 function renderApiKeySelector() {
@@ -153,16 +261,41 @@ function renderSetupGuide() {
   setupGuideEl.classList.toggle('hidden', current.hasApiKey);
 }
 
+function renderFileUrlAccessWarning() {
+  fileUrlAccessWarningEl.classList.toggle('hidden', !current.fileUrlAccessBlocked);
+}
+
 function findGoogleExportOption(format) {
   return current.googleExportOptions.find((option) => option.value === format) || null;
+}
+
+function hasExistingForSelectedFormat() {
+  if (!current.exists?.found) return false;
+  if (!current.googleExportOptions.length) return true;
+  return current.exists.matchedUrl === current.resourceUrl;
+}
+
+function existingFormatLabel() {
+  const matchedOption = current.googleExportOptions.find((option) => option.resourceUrl === current.exists?.matchedUrl);
+  if (matchedOption?.label) return matchedOption.label;
+  const selectedOption = findGoogleExportOption(current.googleExportFormat);
+  if (selectedOption?.label && current.exists?.matchedUrl === current.resourceUrl) return selectedOption.label;
+  return current.resourceLabel || tr('resource_document');
 }
 
 function applyGoogleExportOption(option) {
   if (!option) return;
   current.googleExportFormat = option.value;
+  current.resourceFormat = option.value;
   current.resourceUrl = option.resourceUrl || current.resourceUrl;
   current.resourceLabel = option.resourceLabel || current.resourceLabel;
+  current.resourceDisplayLabel = option.resourceDisplayLabel || current.resourceDisplayLabel;
   current.isOcrable = true;
+  renderImagesPreference();
+}
+
+function renderImagesPreference() {
+  imagesPreferenceEl?.classList.toggle('hidden', current.resourceFormat === 'csv');
 }
 
 function existingCandidateUrls() {
@@ -175,7 +308,12 @@ function existingCandidateUrls() {
 function renderLastOcrJobNotice(notice) {
   if (!notice?.message) return;
   const subject = notice.displayName ? `${notice.title || 'OCR'}: ${notice.displayName}` : (notice.title || 'OCR');
-  setStatus(`${subject} - ${notice.message}`, notice.level === 'warning' ? 'warning' : 'error');
+  renderOcrError(notice);
+  const category = getAccessErrorCategory(notice);
+  const statusMessage = category
+    ? tr(accessErrorStatusKeys[category])
+    : notice.message;
+  setStatus(`${subject} - ${statusMessage}`, category || notice.level === 'warning' ? 'warning' : 'error');
 }
 
 function renderGoogleFormatSelector() {
@@ -187,14 +325,27 @@ function renderGoogleFormatSelector() {
   for (const option of current.googleExportOptions) {
     const label = document.createElement('label');
     const input = document.createElement('input');
-    const text = document.createElement('span');
+    const content = document.createElement('span');
+    const iconPath = formatIconAssets[option.value];
+    content.className = 'format-option-content';
     input.type = 'radio';
     input.name = 'googleExportFormat';
     input.value = option.value;
     input.checked = option.value === current.googleExportFormat;
     input.disabled = !!current.activeJob;
+    if (iconPath) {
+      const icon = document.createElement('img');
+      icon.className = 'format-option-icon';
+      icon.src = chrome.runtime.getURL(iconPath);
+      icon.alt = '';
+      icon.setAttribute('aria-hidden', 'true');
+      content.appendChild(icon);
+    }
+    const text = document.createElement('span');
+    text.className = 'format-option-label';
     text.textContent = option.label;
-    label.append(input, text);
+    content.appendChild(text);
+    label.append(input, content);
     googleFormatOptionsEl.appendChild(label);
   }
 }
@@ -229,7 +380,8 @@ function sendMessage(msg) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(msg, (response) => {
       const err = chrome.runtime.lastError;
-      if (err) return resolve({ ok: false, error: err.message });
+      if (err) return resolve({ ok: false, error: window.getUserFacingError?.(err.message) || err.message });
+      if (response?.error) return resolve({ ...response, error: window.getUserFacingError?.(response.error) || response.error });
       resolve(response);
     });
   });
@@ -246,7 +398,12 @@ async function init({ isRefresh = false } = {}) {
 
   current.resourceUrl = resp.resourceUrl;
   current.resourceKind = resp.resourceKind || null;
+  current.resourceFormat = resp.resourceFormat || null;
+  current.resourceOrigin = resp.resourceOrigin || null;
+  current.resourceProvider = resp.resourceProvider || null;
   current.resourceLabel = resp.resourceLabel || null;
+  current.resourceDisplayLabel = resp.resourceDisplayLabel || current.resourceLabel || null;
+  current.resourceIconUrl = resp.resourceIconUrl || null;
   current.isOcrable = !!resp.isOcrable;
   current.embeddedPdfUrl = resp.embeddedPdfUrl || null;
   current.exists = resp.exists;
@@ -258,21 +415,25 @@ async function init({ isRefresh = false } = {}) {
   current.googleExportFormat = resp.googleExportFormat || 'pdf';
   current.googleExportOptions = Array.isArray(resp.googleExportOptions) ? resp.googleExportOptions : [];
   current.showGoogleExportFormatSelector = resp.showGoogleExportFormatSelector === true;
+  current.fileUrlAccessBlocked = resp.fileUrlAccessBlocked === true;
   current.activeJob = resp.activeJob || null;
 
   const activeLabel = current.apiKeyOptions.find((option) => option.value === current.activeApiKeySlot)?.label;
   apiKeyStatus.textContent = current.hasApiKey
     ? (activeLabel ? tr('api_key_configured_with_label', [activeLabel]) : tr('api_key_configured'))
     : tr('api_key_not_configured');
+  apiKeySummaryEl.classList.toggle('hidden', current.hasApiKey);
 
   const canOcr = current.isOcrable || !!current.embeddedPdfUrl;
   ocrControlsEl.classList.toggle('hidden', !canOcr);
 
-  btnRun.disabled = !!current.activeJob || !canOcr || !current.hasApiKey;
+  btnRun.disabled = !!current.activeJob || !canOcr || !current.hasApiKey || current.fileUrlAccessBlocked;
 
   chkImages.checked = current.includeImages;
+  renderImagesPreference();
 
   renderSetupGuide();
+  renderFileUrlAccessWarning();
   updateResourceInfo();
   updateExistInfo();
   updateRunButton();
@@ -285,13 +446,23 @@ async function init({ isRefresh = false } = {}) {
 }
 
 async function runOcr() {
-  const forceOverwrite = !!current.exists?.found;
+  if (current.fileUrlAccessBlocked) {
+    renderFileUrlAccessWarning();
+    setStatus(tr('error_file_url_access_required'), true);
+    return;
+  }
+  const forceOverwrite = hasExistingForSelectedFormat();
+  renderOcrError(null);
   setStatus(forceOverwrite ? tr('starting_overwrite_background') : tr('starting_ocr_background'));
   const googleExportFormatOverrides = current.resourceKind && current.googleExportFormat
     ? { [current.resourceKind]: current.googleExportFormat }
     : {};
   const resp = await sendMessage({ type: 'START_OCR_JOB', forceOverwrite, googleExportFormatOverrides });
   if (!resp?.ok) {
+    if (resp.errorCode === 'FILE_URL_ACCESS_REQUIRED') {
+      await init({ isRefresh: true });
+    }
+    renderOcrError(resp);
     setStatus(resp?.error || tr('error_in_ocr'), true);
     return;
   }
@@ -367,7 +538,7 @@ async function refreshActiveJob() {
   if (!resp?.ok) return;
   const hadActiveJob = !!current.activeJob;
   current.activeJob = resp.activeJob || null;
-  btnRun.disabled = !!current.activeJob || !(current.isOcrable || !!current.embeddedPdfUrl) || !current.hasApiKey;
+  btnRun.disabled = !!current.activeJob || !(current.isOcrable || !!current.embeddedPdfUrl) || !current.hasApiKey || current.fileUrlAccessBlocked;
   updateRunButton();
   renderActiveJob();
   ensurePolling();
@@ -379,6 +550,14 @@ async function refreshActiveJob() {
 // Eventos UI
 btnRun.addEventListener('click', runOcr);
 btnCancelJob.addEventListener('click', cancelActiveJob);
+
+openFileUrlAccessBtn.addEventListener('click', async () => {
+  try {
+    await chrome.tabs.create({ url: `chrome://extensions/?id=${encodeURIComponent(chrome.runtime.id)}` });
+  } catch (error) {
+    setStatus(error?.message || tr('error_open_extension_settings'), true);
+  }
+});
 
 chkImages.addEventListener('change', async () => {
   const value = !!chkImages.checked;
@@ -407,9 +586,15 @@ googleFormatOptionsEl.addEventListener('change', async (e) => {
 
   applyGoogleExportOption(option);
   updateResourceInfo();
-  setStatus(tr('updating_format'));
+  const savedPreference = await sendMessage({
+    type: 'SET_GOOGLE_EXPORT_FORMAT',
+    kind: current.resourceKind,
+    format: current.googleExportFormat
+  });
+  if (!savedPreference?.ok) {
+    setStatus(savedPreference?.error || tr('could_not_check_previous_ocr_format'), true);
+  }
   const resp = await sendMessage({ type: 'CHECK_EXISTING_FOR_URL', url: current.resourceUrl, urls: existingCandidateUrls() });
-  setStatus('');
   if (!resp?.ok) {
     setStatus(resp?.error || tr('could_not_check_previous_ocr_format'), true);
     current.exists = { found: false };

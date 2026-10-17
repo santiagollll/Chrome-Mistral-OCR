@@ -24,7 +24,13 @@
     "message": "Set up your Mistral API key"
   },
   "popup_setup_body": {
-    "message": "You need an API key to transcribe documents with OCR."
+    "message": "To use this extension, activate Pay as you go in your Mistral account and add balance."
+  },
+  "payg_required_warning": {
+    "message": "⚠️ If Pay as you go is not active, this extension will not work."
+  },
+  "setup_step_activate_payg": {
+    "message": "Activate Pay as you go and add balance in your Mistral account."
   },
   "setup_step_create_key": {
     "message": "Create an API key in Mistral Console."
@@ -41,11 +47,34 @@
   "open_mistral_console": {
     "message": "Open Mistral Console"
   },
+  "activate_pay_as_you_go": {
+    "message": "Activate Pay as you go"
+  },
   "ocr_controls_aria": {
     "message": "OCR controls"
   },
   "current_resource": {
     "message": "Current resource"
+  },
+  "resource_indicator": {
+    "message": "Resource: $RESOURCE$",
+    "placeholders": {
+      "resource": {
+        "content": "$1"
+      }
+    }
+  },
+  "resource_pdf": {
+    "message": "PDF"
+  },
+  "resource_google_docs": {
+    "message": "Google Docs"
+  },
+  "resource_google_slides": {
+    "message": "Google Slides"
+  },
+  "resource_google_sheets": {
+    "message": "Google Sheets"
   },
   "format_for_transcription": {
     "message": "Format to use for this transcription"
@@ -93,10 +122,19 @@
     "message": "Connect Mistral OCR with your API key"
   },
   "options_setup_body": {
-    "message": "The extension runs locally in Chrome, but OCR uses your Mistral account."
+    "message": "To use this extension, activate Pay as you go in your Mistral account and add balance."
   },
   "options_setup_step_open": {
-    "message": "Open Mistral Console and create an API key."
+    "message": "Open Mistral Console."
+  },
+  "options_setup_step_create_account": {
+    "message": "Sign in or create a Mistral account."
+  },
+  "options_setup_step_activate_payg": {
+    "message": "Activate Pay as you go and add balance in your Mistral account."
+  },
+  "options_setup_step_create_key": {
+    "message": "Create an API key in Mistral Console."
   },
   "options_setup_step_paste": {
     "message": "Paste that key into API key 1."
@@ -185,6 +223,26 @@
   "disable_preview_autosave_note": {
     "message": "When enabled, Preview/Edit will show the Save changes button."
   },
+  "disable_classic_latex_rendering": {
+    "message": "Disable classic LaTeX rendering"
+  },
+  "disable_classic_latex_rendering_note": {
+    "message": "When enabled, classic expressions using dollar delimiters are shown as text; modern LaTeX continues to render."
+  },
+  "include_pdf_metadata": {
+    "message": "Include document information at the top of the PDF"
+  },
+  "include_pdf_metadata_note": {
+    "message": "When enabled, the PDF includes the title, the original SHA, and other document details at the top."
+  },
+  "original_sha": {
+    "message": "Original SHA: $SHA$",
+    "placeholders": {
+      "sha": {
+        "content": "$1"
+      }
+    }
+  },
   "experimental": {
     "message": "Experimental"
   },
@@ -248,15 +306,6 @@
   "google_native_note": {
     "message": "Each service can export to its Office/CSV format instead of PDF."
   },
-  "google_sheets_format": {
-    "message": "Format for Google Sheets"
-  },
-  "use_xlsx": {
-    "message": "Use .xlsx"
-  },
-  "use_csv": {
-    "message": "Use .csv"
-  },
   "xlsx_help_label": {
     "message": ".xlsx help"
   },
@@ -303,7 +352,7 @@
     "message": "Local archive"
   },
   "transcriptions_subtitle": {
-    "message": "Search by name, URL, SHA, type, or OCR metadata."
+    "message": "Search by name, URL, original SHA, type, or OCR metadata."
   },
   "back_to_settings": {
     "message": "Back to settings"
@@ -312,7 +361,7 @@
     "message": "Search transcriptions"
   },
   "search_placeholder": {
-    "message": "Name, URL, SHA, or type"
+    "message": "Name, URL, original SHA, or type"
   },
   "transcription_list_aria": {
     "message": "Transcription list"
@@ -323,8 +372,20 @@
   "transcription_actions_aria": {
     "message": "Transcription actions"
   },
+  "preview_details": {
+    "message": "Details"
+  },
+  "show_preview_details": {
+    "message": "Show preview details"
+  },
+  "hide_preview_details": {
+    "message": "Hide preview details"
+  },
+  "dismiss_notification": {
+    "message": "Dismiss notification"
+  },
   "history": {
-    "message": "History"
+    "message": "Transcriptions"
   },
   "save_changes": {
     "message": "Save changes"
@@ -355,6 +416,12 @@
   },
   "error_initializing": {
     "message": "Error initializing"
+  },
+  "error_refresh_page_required": {
+    "message": "Please refresh the page and try again."
+  },
+  "error_invalid_google_export_format": {
+    "message": "Invalid Google export format."
   },
   "api_key_configured": {
     "message": "configured"
@@ -391,6 +458,24 @@
   },
   "copy_content": {
     "message": "Copy content"
+  },
+  "rename_transcription": {
+    "message": "Rename"
+  },
+  "rename_name_placeholder": {
+    "message": "Transcription name"
+  },
+  "rename_saved": {
+    "message": "Transcription renamed."
+  },
+  "could_not_rename": {
+    "message": "Could not rename transcription."
+  },
+  "error_transcription_name_required": {
+    "message": "Name cannot be empty."
+  },
+  "error_transcription_name_too_long": {
+    "message": "Name must be 200 characters or fewer."
   },
   "showing_recent_transcriptions": {
     "message": "Showing $COUNT$ of $TOTAL$ recent transcriptions. Open \"View all\" to search, export, or delete.",
@@ -434,6 +519,14 @@
       }
     }
   },
+  "ocr_exists_for_document_format": {
+    "message": "A previous OCR transcription exists in export format $FORMAT$.",
+    "placeholders": {
+      "format": {
+        "content": "$1"
+      }
+    }
+  },
   "no_previous_ocr_for_document": {
     "message": "No previous OCR for this document."
   },
@@ -449,8 +542,56 @@
   "starting_ocr_background": {
     "message": "Starting background OCR..."
   },
+  "ocr_access_help_title": {
+    "message": "OCR could not be completed"
+  },
+  "ocr_access_help_body": {
+    "message": "This may be because Pay as you go is not active, your balance is insufficient, or a usage limit has been reached."
+  },
+  "ocr_access_reason_no_active_usage_limit": {
+    "message": "Pay as you go may not be active for this API key."
+  },
+  "ocr_access_reason_rate_limit_reached": {
+    "message": "A Mistral usage limit may have been reached."
+  },
+  "ocr_access_reason_payment_required": {
+    "message": "Your balance or payment setup may need attention."
+  },
+  "ocr_access_status_no_active_usage_limit": {
+    "message": "Pay as you go or active usage may be required."
+  },
+  "ocr_access_status_rate_limit_reached": {
+    "message": "A usage limit may have been reached."
+  },
+  "ocr_access_status_payment_required": {
+    "message": "Payment or balance may be required."
+  },
+  "ocr_access_activate_payg": {
+    "message": "Activate Pay as you go"
+  },
+  "ocr_access_details": {
+    "message": "Technical details"
+  },
+  "ocr_http_status_label": {
+    "message": "HTTP status"
+  },
+  "ocr_mistral_code_label": {
+    "message": "Mistral code"
+  },
+  "ocr_description_label": {
+    "message": "Description"
+  },
   "error_in_ocr": {
     "message": "OCR error"
+  },
+  "ocr_error_details": {
+    "message": "OCR error details"
+  },
+  "error_code_label": {
+    "message": "Error code"
+  },
+  "error_description_label": {
+    "message": "Description"
   },
   "resource_already_processed_copying": {
     "message": "This resource was already processed. Copying markdown..."
@@ -629,6 +770,9 @@
   },
   "resource_document": {
     "message": "Document"
+  },
+  "non_google_source": {
+    "message": "Non-Google document"
   },
   "resource_document_ext": {
     "message": "Document $EXT$",
@@ -878,5 +1022,77 @@
   },
   "error_unsupported_google_document_type": {
     "message": "Unsupported Google document type."
+  },
+  "file_url_access_warning_title": {
+    "message": "Access to local files is disabled"
+  },
+  "file_url_access_warning_body": {
+    "message": "To transcribe this local file, allow the extension to access file URLs."
+  },
+  "file_url_access_warning_aria": {
+    "message": "Local file access warning"
+  },
+  "file_url_access_step_open": {
+    "message": "Open the extension details page."
+  },
+  "file_url_access_step_toggle": {
+    "message": "Enable “Allow access to file URLs”."
+  },
+  "file_url_access_step_reopen": {
+    "message": "Reopen this popup and try again."
+  },
+  "file_url_access_open_settings": {
+    "message": "Open extension settings"
+  },
+  "error_file_url_access_required": {
+    "message": "Allow access to file URLs in the extension settings before transcribing this local file."
+  },
+  "error_open_extension_settings": {
+    "message": "Could not open the extension settings."
+  },
+  "ocr_exists_generic": {
+    "message": "A previous OCR transcription exists."
+  },
+  "api_key_1_label": {
+    "message": "API key 1"
+  },
+  "api_key_2_label": {
+    "message": "API key 2"
+  },
+  "personalization": {
+    "message": "Personalization"
+  },
+  "extension_icon": {
+    "message": "Extension icon"
+  },
+  "custom_icon_description": {
+    "message": "Use a PNG URL to replace the extension toolbar icon in this browser."
+  },
+  "png_icon_url": {
+    "message": "PNG icon URL"
+  },
+  "example": {
+    "message": "Example:"
+  },
+  "official_mistral_logo_png": {
+    "message": "Official Mistral logo PNG"
+  },
+  "custom_icon_direct_png_note": {
+    "message": "Only direct HTTPS PNG URLs are supported. The icon is resized and stored locally in this browser."
+  },
+  "apply_custom_icon": {
+    "message": "Apply custom icon"
+  },
+  "reset_custom_icon": {
+    "message": "Reset default icon"
+  },
+  "preview_edit": {
+    "message": "Preview/Edit"
+  },
+  "original_sha_label": {
+    "message": "SHA"
+  },
+  "custom_icon_section_aria": {
+    "message": "Custom icon settings"
   }
 }

@@ -20,13 +20,74 @@
 
       <div id="status" class="small status-line" aria-live="polite"></div>
 
+      <section id="ocrError" class="ocr-error hidden" role="alert" aria-live="assertive">
+        <div class="ocr-error-title" data-i18n="ocr_error_details">OCR error details</div>
+        <div class="ocr-error-field">
+          <span class="ocr-error-label" data-i18n="error_code_label">Error code</span>
+          <code id="ocrErrorCode"></code>
+        </div>
+        <div class="ocr-error-field ocr-error-description">
+          <span class="ocr-error-label" data-i18n="error_description_label">Description</span>
+          <div id="ocrErrorDescription"></div>
+        </div>
+      </section>
+
+      <section id="ocrAccessHelp" class="ocr-access-help hidden" role="alert" aria-live="assertive">
+        <div class="ocr-access-help-heading">
+          <div class="ocr-access-help-icon" aria-hidden="true">⚠️</div>
+          <div>
+            <div class="ocr-access-help-title" data-i18n="ocr_access_help_title">OCR could not be completed</div>
+            <p id="ocrAccessHelpBody" class="ocr-access-help-body" data-i18n="ocr_access_help_body">This may be because Pay as you go is not active, your balance is insufficient, or a usage limit has been reached.</p>
+          </div>
+        </div>
+        <p id="ocrAccessReason" class="ocr-access-reason"></p>
+        <div class="actions">
+          <a class="button primary" href="https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO" target="_blank" rel="noopener noreferrer" data-i18n="ocr_access_activate_payg">Activate Pay as you go</a>
+        </div>
+        <details class="ocr-access-details">
+          <summary data-i18n="ocr_access_details">Technical details</summary>
+          <div class="ocr-error-field">
+            <span class="ocr-error-label" data-i18n="ocr_http_status_label">HTTP status</span>
+            <code id="ocrAccessHttpStatus"></code>
+          </div>
+          <div class="ocr-error-field">
+            <span class="ocr-error-label" data-i18n="ocr_mistral_code_label">Mistral code</span>
+            <code id="ocrAccessMistralCode"></code>
+          </div>
+          <div class="ocr-error-field ocr-error-description">
+            <span class="ocr-error-label" data-i18n="ocr_description_label">Description</span>
+            <div id="ocrAccessDescription"></div>
+          </div>
+        </details>
+      </section>
+
+      <section id="fileUrlAccessWarning" class="file-url-access-warning hidden" role="alert" aria-live="assertive" aria-label="Local file access" data-i18n-aria-label="file_url_access_warning_aria">
+        <div class="ocr-access-help-heading">
+          <div class="ocr-access-help-icon" aria-hidden="true">⚠️</div>
+          <div>
+            <div class="ocr-access-help-title" data-i18n="file_url_access_warning_title">Access to local files is disabled</div>
+            <p class="ocr-access-help-body" data-i18n="file_url_access_warning_body">To transcribe this local file, allow the extension to access file URLs.</p>
+          </div>
+        </div>
+        <ol class="file-url-access-steps">
+          <li data-i18n="file_url_access_step_open">Open the extension details.</li>
+          <li data-i18n="file_url_access_step_toggle">Enable “Allow access to file URLs”.</li>
+          <li data-i18n="file_url_access_step_reopen">Reopen this popup and try again.</li>
+        </ol>
+        <div class="actions">
+          <button id="openFileUrlAccess" class="primary" type="button" data-i18n="file_url_access_open_settings">Open extension settings</button>
+        </div>
+      </section>
+
       <section id="setupGuide" class="panel setup-guide hidden" aria-label="First-use guide" data-i18n-aria-label="setup_guide_aria">
         <div>
           <div class="eyebrow" data-i18n="first_use">First use</div>
           <h2 data-i18n="popup_setup_title">Set up your Mistral API key</h2>
-          <p data-i18n="popup_setup_body">You need an API key to transcribe documents with OCR.</p>
+          <p data-i18n="popup_setup_body">To use this extension, activate Pay as you go in your Mistral account and add balance.</p>
+          <p class="setup-warning" data-i18n="payg_required_warning">⚠️ If Pay as you go is not active, this extension will not work.</p>
         </div>
         <ol>
+          <li data-i18n="setup_step_activate_payg">Activate Pay as you go and add balance in your Mistral account.</li>
           <li data-i18n="setup_step_create_key">Create an API key in Mistral Console.</li>
           <li data-i18n="setup_step_paste_key">Paste it in Options, under API key 1.</li>
           <li data-i18n="setup_step_save_key">Save and reopen this popup.</li>
@@ -34,13 +95,14 @@
         <div class="actions">
           <button id="setupOpenOptions" class="primary" type="button" data-i18n="configure_api_key">Configure API key</button>
           <a class="button subtle" href="https://console.mistral.ai/" target="_blank" rel="noopener noreferrer" data-i18n="open_mistral_console">Open Mistral Console</a>
+          <a class="button subtle" href="https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO" target="_blank" rel="noopener noreferrer" data-i18n="activate_pay_as_you_go">Activate Pay as you go</a>
         </div>
       </section>
 
       <section id="controls" class="panel resource-card" aria-label="OCR controls" data-i18n-aria-label="ocr_controls_aria">
-        <div class="resource-status">
-          <div class="small" data-i18n="current_resource">Current resource</div>
-          <div id="resourceInfo"></div>
+        <div id="resourceStatus" class="resource-status hidden" aria-live="polite">
+          <img id="resourceIcon" class="resource-icon hidden" alt="" aria-hidden="true">
+          <span id="resourceInfo"></span>
         </div>
 
         <div id="googleFormatSwitch" class="format-switch hidden">
@@ -48,16 +110,18 @@
           <div id="googleFormatOptions" class="format-options"></div>
         </div>
 
-        <div id="ocrControls" class="row">
+        <div id="ocrControls" class="ocr-controls">
           <button id="btnRun" class="primary" type="button" data-i18n="run_ocr">Transcribe (OCR)</button>
-          <label class="inline">
-            <input type="checkbox" id="chkImages" checked>
-            <span data-i18n="download_images">Download images</span>
-          </label>
-          <label id="apiKeySelectWrap" class="inline hidden">
-            <span>API key</span>
-            <select id="apiKeySelect"></select>
-          </label>
+          <div class="ocr-preferences">
+            <label class="ocr-checkbox-option">
+              <input type="checkbox" id="chkImages" checked>
+              <span data-i18n="download_images">Download images</span>
+            </label>
+            <label id="apiKeySelectWrap" class="ocr-api-key-field hidden">
+              <span class="ocr-control-label" data-i18n="api_key_label">API key</span>
+              <select id="apiKeySelect"></select>
+            </label>
+          </div>
         </div>
 
         <div id="jobBox" class="small hidden" aria-live="polite">
@@ -66,8 +130,8 @@
           <button id="btnCancelJob" class="danger" type="button" data-i18n="cancel">Cancel</button>
         </div>
 
-        <div id="existInfo" class="small"></div>
-        <div class="small">
+        <div id="existInfo" class="small resource-document-status"></div>
+        <div id="apiKeySummary" class="small resource-api-status">
           <span data-i18n="api_key_label">API key</span>: <span id="apiKeyStatus"></span> | <a id="openOptions" href="#" data-i18n="configure">Configure</a>
         </div>
       </section>

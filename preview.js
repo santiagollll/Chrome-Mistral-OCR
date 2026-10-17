@@ -1,16 +1,24 @@
 'use strict';
 
 const titleEl = document.getElementById('title');
+const resourceIdentityEl = document.getElementById('resourceIdentity');
 const metaEl = document.getElementById('meta');
 const confidenceSummaryEl = document.getElementById('confidenceSummary');
 const statusEl = document.getElementById('status');
+const statusMessageEl = document.getElementById('statusMessage');
+const statusDismissBtn = document.getElementById('statusDismiss');
 const rawEditorEl = document.getElementById('rawEditor');
 const splitRenderedEl = document.getElementById('splitRendered');
+const splitModeEl = document.getElementById('splitMode');
+const renameTitleBtn = document.getElementById('renameTitle');
 const saveMdBtn = document.getElementById('saveMd');
 const copyRawBtn = document.getElementById('copyRaw');
 const exportMdBtn = document.getElementById('exportMd');
 const exportPdfBtn = document.getElementById('exportPdf');
 const exportImagesBtn = document.getElementById('exportImages');
+const exportMenuEl = document.getElementById('exportMenu');
+const detailsToggleBtn = document.getElementById('detailsToggle');
+const previewDetailsEl = document.getElementById('previewDetails');
 const confidencePopoverEl = document.getElementById('confidencePopover');
 const confidencePopoverTextEl = document.getElementById('confidencePopoverText');
 const confidenceKeepBtn = document.getElementById('confidenceKeep');
@@ -22,23 +30,82 @@ let renderFrame = null;
 let renderTimer = null;
 let autoSaveTimer = null;
 let autoSaveEnabled = true;
-let isSyncingScroll = false;
+let disableClassicLatexRendering = false;
+let scrollSyncOrigin = '';
 let scrollAnchors = [];
 let anchorBuildFrame = null;
-let rawSyncFrame = null;
+let scrollSyncFrame = null;
+let touchScrollSource = null;
+let touchScrollPointerId = null;
+let touchScrollReleaseTimer = null;
 let activeConfidenceKey = '';
 let hidePopoverTimer = null;
+let statusTimer = null;
+let viewerResizeObserver = null;
 
-function setStatus(msg, isError = false) {
-  statusEl.textContent = msg || '';
-  statusEl.className = isError ? 'small status-line warn' : 'small status-line';
+function setStatus(msg, options = {}) {
+  clearTimeout(statusTimer);
+  statusTimer = null;
+
+  if (!msg) {
+    statusMessageEl.textContent = '';
+    statusEl.hidden = true;
+    statusEl.removeAttribute('data-tone');
+    statusDismissBtn.hidden = true;
+    return;
+  }
+
+  const normalized = typeof options === 'boolean'
+    ? { tone: options ? 'error' : 'success' }
+    : options;
+  const tone = normalized.tone || 'success';
+  const defaultDuration = tone === 'error' || tone === 'progress' ? 0 : 3000;
+  const duration = Number.isFinite(normalized.duration) ? normalized.duration : defaultDuration;
+
+  statusMessageEl.textContent = msg;
+  statusEl.dataset.tone = tone;
+  statusEl.hidden = false;
+  statusDismissBtn.hidden = tone !== 'error';
+
+  if (duration > 0) {
+    statusTimer = setTimeout(() => setStatus(''), duration);
+  }
+}
+
+function setPreviewDetailsExpanded(expanded, { persist = false } = {}) {
+  previewDetailsEl.hidden = !expanded;
+  detailsToggleBtn.setAttribute('aria-expanded', String(expanded));
+  const label = tr(expanded ? 'hide_preview_details' : 'show_preview_details');
+  detailsToggleBtn.setAttribute('aria-label', label);
+  detailsToggleBtn.title = label;
+  scheduleAnchorBuild();
+
+  if (persist) {
+    void chrome.storage.local.set({ previewDetailsExpanded: expanded });
+  }
+}
+
+async function loadPreviewDetailsPreference() {
+  try {
+    const { previewDetailsExpanded = false } = await chrome.storage.local.get(['previewDetailsExpanded']);
+    setPreviewDetailsExpanded(previewDetailsExpanded === true);
+  } catch {
+    setPreviewDetailsExpanded(false);
+  }
+}
+
+function closeExportMenu({ restoreFocus = false } = {}) {
+  if (!exportMenuEl.open) return;
+  exportMenuEl.open = false;
+  if (restoreFocus) exportMenuEl.querySelector('summary')?.focus();
 }
 
 function sendMessage(msg) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(msg, (response) => {
       const err = chrome.runtime.lastError;
-      if (err) return resolve({ ok: false, error: err.message });
+      if (err) return resolve({ ok: false, error: window.getUserFacingError?.(err.message) || err.message });
+      if (response?.error) return resolve({ ...response, error: window.getUserFacingError?.(response.error) || response.error });
       resolve(response);
     });
   });
@@ -51,6 +118,13 @@ function getHashFromUrl() {
 function formatDate(value) {
   if (!value) return tr('no_date');
   return new Date(value).toLocaleString();
+}
+
+function validateTranscriptionName(value) {
+  const normalized = String(value ?? '').trim();
+  if (!normalized) return tr('error_transcription_name_required');
+  if (Array.from(normalized).length > 200) return tr('error_transcription_name_too_long');
+  return '';
 }
 
 function imageKey(value) {
@@ -96,15 +170,83 @@ function upgradeLinks(root) {
   }
 }
 
+const MODERN_LATEX_DELIMITERS = [
+  { left: '\\begin{equation*}', right: '\\end{equation*}', display: true },
+  { left: '\\begin{alignat*}', right: '\\end{alignat*}', display: true },
+  { left: '\\begin{align*}', right: '\\end{align*}', display: true },
+  { left: '\\begin{gather*}', right: '\\end{gather*}', display: true },
+  { left: '\\begin{equation}', right: '\\end{equation}', display: true },
+  { left: '\\begin{alignat}', right: '\\end{alignat}', display: true },
+  { left: '\\begin{align}', right: '\\end{align}', display: true },
+  { left: '\\begin{gather}', right: '\\end{gather}', display: true },
+  { left: '\\begin{CD}', right: '\\end{CD}', display: true },
+  { left: '\\[', right: '\\]', display: true },
+  { left: '\\(', right: '\\)', display: false }
+];
+
+const CLASSIC_LATEX_DELIMITERS = [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false }
+];
+
+const MODERN_LATEX_MARKED_EXTENSION = {
+  name: 'modernLatex',
+  level: 'inline',
+  start(source) {
+    let firstIndex = -1;
+    for (const delimiter of MODERN_LATEX_DELIMITERS) {
+      const index = source.indexOf(delimiter.left);
+      if (index >= 0 && (firstIndex < 0 || index < firstIndex)) {
+        firstIndex = index;
+      }
+    }
+    return firstIndex >= 0 ? firstIndex : undefined;
+  },
+  tokenizer(source) {
+    for (const delimiter of MODERN_LATEX_DELIMITERS) {
+      if (!source.startsWith(delimiter.left)) continue;
+
+      const closingIndex = source.indexOf(delimiter.right, delimiter.left.length);
+      if (closingIndex < 0) return undefined;
+
+      const raw = source.slice(0, closingIndex + delimiter.right.length);
+      return {
+        type: 'modernLatex',
+        raw,
+        text: raw
+      };
+    }
+    return undefined;
+  },
+  renderer(token) {
+    return escapeHtml(token.raw);
+  }
+};
+
+let modernLatexMarkedExtensionInstalled = false;
+
+function ensureModernLatexMarkedSupport(markedApi) {
+  if (modernLatexMarkedExtensionInstalled || typeof markedApi?.use !== 'function') return;
+  markedApi.use({ extensions: [MODERN_LATEX_MARKED_EXTENSION] });
+  modernLatexMarkedExtensionInstalled = true;
+}
+
+function markedRenderOptions(markedApi) {
+  ensureModernLatexMarkedSupport(markedApi);
+  return {
+    gfm: true,
+    breaks: false,
+    silent: true,
+    extensions: markedApi?.defaults?.extensions
+  };
+}
+
 function renderMath(root) {
   if (typeof renderMathInElement !== 'function') return;
   renderMathInElement(root, {
-    delimiters: [
-      { left: '$$', right: '$$', display: true },
-      { left: '$', right: '$', display: false },
-      { left: '\\[', right: '\\]', display: true },
-      { left: '\\(', right: '\\)', display: false }
-    ],
+    delimiters: disableClassicLatexRendering
+      ? MODERN_LATEX_DELIMITERS
+      : [...MODERN_LATEX_DELIMITERS, ...CLASSIC_LATEX_DELIMITERS],
     ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
     throwOnError: false
   });
@@ -175,33 +317,6 @@ function hasVisibleConfidenceText(score) {
   return !!text && !text.startsWith('![');
 }
 
-function canReadTextNode(node) {
-  const parent = node.parentElement;
-  if (!parent) return false;
-  return !parent.closest('pre, code, kbd, script, style, textarea, .katex, mark.confidence-low');
-}
-
-function collectTextNodes(root) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  let fullText = '';
-  let node;
-  while ((node = walker.nextNode())) {
-    if (!canReadTextNode(node)) continue;
-    nodes.push({
-      node,
-      start: fullText.length,
-      end: fullText.length + node.nodeValue.length
-    });
-    fullText += node.nodeValue;
-  }
-  return { nodes, fullText };
-}
-
-function findNodeAt(nodes, absoluteOffset) {
-  return nodes.find((entry) => absoluteOffset >= entry.start && absoluteOffset <= entry.end) || null;
-}
-
 function applyConfidenceDataset(el, score, className) {
   el.classList.add('confidence-low');
   if (className) el.classList.add(className);
@@ -216,97 +331,6 @@ function createConfidenceMark(text, score, className) {
   applyConfidenceDataset(mark, score, className);
   mark.textContent = text;
   return mark;
-}
-
-function wrapSingleTextNodeRange(range) {
-  const { nodes } = collectTextNodes(range.root);
-  const startEntry = findNodeAt(nodes, range.start);
-  const endEntry = findNodeAt(nodes, range.end);
-  if (!startEntry || !endEntry || startEntry.node !== endEntry.node) return;
-
-  const node = startEntry.node;
-  const start = range.start - startEntry.start;
-  const end = range.end - startEntry.start;
-  const text = node.nodeValue;
-  const before = text.slice(0, start);
-  const middle = text.slice(start, end);
-  const after = text.slice(end);
-  if (!middle) return;
-
-  const fragment = document.createDocumentFragment();
-  if (before) fragment.appendChild(document.createTextNode(before));
-  fragment.appendChild(createConfidenceMark(middle, range.score, range.className));
-  if (after) fragment.appendChild(document.createTextNode(after));
-  node.parentNode.replaceChild(fragment, node);
-}
-
-function findHighlightIndex(fullText, text, ranges, preferredStart) {
-  const starts = [preferredStart, Math.max(0, preferredStart - 80), 0];
-  for (const startFrom of starts) {
-    let index = fullText.indexOf(text, Math.max(0, startFrom || 0));
-    while (index >= 0) {
-      const end = index + text.length;
-      const overlaps = ranges.some((range) => index < range.end && end > range.start);
-      if (!overlaps) return index;
-      index = fullText.indexOf(text, index + 1);
-    }
-  }
-  return -1;
-}
-
-function visiblePrefixForMarkdown(markdown) {
-  const markedApi = window.marked?.marked || window.marked;
-  const parsed = markedApi.parse(markdown || '', {
-    gfm: true,
-    breaks: false,
-    silent: true
-  });
-  const template = document.createElement('template');
-  template.innerHTML = DOMPurify.sanitize(parsed);
-  const scratch = document.createElement('div');
-  scratch.appendChild(template.content.cloneNode(true));
-  for (const node of scratch.querySelectorAll('pre, code, kbd, script, style, textarea')) {
-    node.remove();
-  }
-  return scratch.textContent || '';
-}
-
-function approximateVisibleOffset(markdown, markdownOffset) {
-  if (typeof markdownOffset !== 'number' || markdownOffset <= 0) return 0;
-  return visiblePrefixForMarkdown(markdown.slice(0, markdownOffset)).length;
-}
-
-function applyConfidenceHighlights(root, item) {
-  const confidenceWords = item.resolvedConfidenceScores || item.confidenceWords || [];
-  const imageRanges = markdownImageRanges(item.markdown || '');
-  const { fullText } = collectTextNodes(root);
-  const ranges = [];
-  let preferredStart = 0;
-  const visibleOffsetCache = new Map();
-
-  for (const score of confidenceWords) {
-    const className = confidenceClass(score.confidence);
-    if (!className || isConfidenceDismissed(item, score)) continue;
-    if (isInsideRange(score.markdownOffset, imageRanges)) continue;
-
-    const text = visibleScoreText(score.text);
-    const expectedOffset = visibleOffsetCache.has(score.markdownOffset)
-      ? visibleOffsetCache.get(score.markdownOffset)
-      : approximateVisibleOffset(item.markdown || '', score.markdownOffset);
-    visibleOffsetCache.set(score.markdownOffset, expectedOffset);
-    const preferred = typeof score.markdownOffset === 'number' ? expectedOffset : preferredStart;
-    if (!text) continue;
-
-    const index = findHighlightIndex(fullText, text, ranges, preferred);
-    if (index < 0) continue;
-
-    const start = index;
-    const end = index + text.length;
-    ranges.push({ root, start, end, className, score });
-    preferredStart = end;
-  }
-
-  ranges.sort((a, b) => b.start - a.start).forEach(wrapSingleTextNodeRange);
 }
 
 function rawScoreCandidates(score) {
@@ -387,8 +411,127 @@ function buildRawHighlightRanges(markdown, item) {
   return ranges.sort((a, b) => a.start - b.start);
 }
 
+const MARKDOWN_SYNTAX_TOKEN_TYPES = new Set([
+  'blockquote',
+  'code',
+  'del',
+  'em',
+  'heading',
+  'hr',
+  'image',
+  'link',
+  'list',
+  'strong',
+  'table'
+]);
+
+function trimMarkdownSyntaxRange(source, start, end) {
+  while (end > start && /\s/.test(source[end - 1])) end -= 1;
+  return end > start ? { start, end } : null;
+}
+
+function collectMarkdownSyntaxRanges(source, tokens, start, end, output) {
+  let cursor = start;
+  for (const token of tokens || []) {
+    const raw = String(token.raw || '');
+    if (!raw) continue;
+
+    const found = source.indexOf(raw, cursor);
+    const tokenStart = found >= start && found < end ? found : cursor;
+    const tokenEnd = Math.min(end, tokenStart + raw.length);
+
+    if (MARKDOWN_SYNTAX_TOKEN_TYPES.has(token.type)) {
+      const range = trimMarkdownSyntaxRange(source, tokenStart, tokenEnd);
+      if (range) output.push(range);
+    } else if (token.tokens?.length) {
+      collectMarkdownSyntaxRanges(source, token.tokens, tokenStart, tokenEnd, output);
+    }
+
+    cursor = tokenEnd;
+  }
+}
+
+function buildMarkdownSyntaxRanges(markdown) {
+  const source = String(markdown || '');
+  const blockRanges = markdownBlockOffsets(source);
+  const ranges = [];
+
+  for (const block of blockRanges) {
+    collectMarkdownSyntaxRanges(source, [block.token], block.start, block.end, ranges);
+  }
+
+  ranges.sort((a, b) => a.start - b.start || b.end - a.end);
+  const merged = [];
+  for (const range of ranges) {
+    const previous = merged[merged.length - 1];
+    if (previous && range.start <= previous.end) {
+      previous.end = Math.max(previous.end, range.end);
+    } else {
+      merged.push({ ...range });
+    }
+  }
+  return merged;
+}
+
+function applyMarkdownSyntaxColor(root, ranges) {
+  if (!ranges.length) return;
+
+  const textNodes = collectEditorTextNodes(root);
+
+  for (const item of textNodes) {
+    const length = item.node.nodeValue.length;
+    const boundaries = new Set([0, length]);
+    for (const range of ranges) {
+      if (range.end <= item.start || range.start >= item.end) continue;
+      boundaries.add(Math.max(0, range.start - item.start));
+      boundaries.add(Math.min(length, range.end - item.start));
+    }
+
+    const points = Array.from(boundaries).sort((a, b) => a - b);
+    if (points.length === 2 && !ranges.some((range) => range.start < item.end && range.end > item.start)) continue;
+
+    const fragment = document.createDocumentFragment();
+    for (let index = 0; index < points.length - 1; index += 1) {
+      const segmentStart = points[index];
+      const segmentEnd = points[index + 1];
+      if (segmentEnd <= segmentStart) continue;
+
+      const absoluteStart = item.start + segmentStart;
+      const absoluteEnd = item.start + segmentEnd;
+      const text = item.node.nodeValue.slice(segmentStart, segmentEnd);
+      const isSyntax = ranges.some((range) => range.start < absoluteEnd && range.end > absoluteStart);
+
+      if (isSyntax) {
+        const syntaxSpan = document.createElement('span');
+        syntaxSpan.className = 'markdown-syntax';
+        syntaxSpan.textContent = text;
+        fragment.appendChild(syntaxSpan);
+      } else {
+        fragment.appendChild(document.createTextNode(text));
+      }
+    }
+    item.node.replaceWith(fragment);
+  }
+}
+
+function removeMarkdownSyntaxColor(root) {
+  for (const syntaxSpan of root.querySelectorAll('.markdown-syntax')) {
+    const replacement = document.createDocumentFragment();
+    while (syntaxSpan.firstChild) replacement.appendChild(syntaxSpan.firstChild);
+    syntaxSpan.replaceWith(replacement);
+  }
+}
+
+function refreshMarkdownSyntaxColor(caretOffset = null) {
+  const markdown = editorTextFromNode(rawEditorEl);
+  removeMarkdownSyntaxColor(rawEditorEl);
+  applyMarkdownSyntaxColor(rawEditorEl, buildMarkdownSyntaxRanges(markdown));
+  restoreSelectionFromTextOffset(rawEditorEl, caretOffset);
+}
+
 function renderRawEditor(markdown, item) {
   const ranges = item.rawConfidenceRanges || buildRawHighlightRanges(markdown, item);
+  const syntaxRanges = buildMarkdownSyntaxRanges(markdown);
   const fragment = document.createDocumentFragment();
   let cursor = 0;
 
@@ -405,18 +548,16 @@ function renderRawEditor(markdown, item) {
   if (!markdown) fragment.appendChild(document.createElement('br'));
 
   rawEditorEl.replaceChildren(fragment);
+  applyMarkdownSyntaxColor(rawEditorEl, syntaxRanges);
 }
 
 function markdownBlockOffsets(markdown) {
   const markedApi = window.marked?.marked || window.marked;
   if (!markedApi?.lexer) return [];
+  ensureModernLatexMarkedSupport(markedApi);
 
   const source = String(markdown || '');
-  const tokens = markedApi.lexer(source, {
-    gfm: true,
-    breaks: false,
-    silent: true
-  });
+  const tokens = markedApi.lexer(source, markedRenderOptions(markedApi));
   const links = tokens.links || {};
   const ranges = [];
   let cursor = 0;
@@ -445,36 +586,24 @@ function firstVisibleMarkdownOffset(markdown, start, end) {
 
 function renderAnchoredMarkdown(markdown) {
   const markedApi = window.marked?.marked || window.marked;
+  ensureModernLatexMarkedSupport(markedApi);
   const ranges = markdownBlockOffsets(markdown);
   if (!ranges.length) {
-    return markedApi.parse(markdown || '', {
-      gfm: true,
-      breaks: false,
-      silent: true
-    });
+    return markedApi.parse(markdown || '', markedRenderOptions(markedApi));
   }
 
   return ranges.map((range) => {
     const tokenList = [range.token];
     tokenList.links = range.links || {};
     const parsed = typeof markedApi.parser === 'function'
-      ? markedApi.parser(tokenList, {
-        gfm: true,
-        breaks: false,
-        silent: true
-      })
-      : markedApi.parse(range.raw, {
-        gfm: true,
-        breaks: false,
-        silent: true
-      });
+      ? markedApi.parser(tokenList, markedRenderOptions(markedApi))
+      : markedApi.parse(range.raw, markedRenderOptions(markedApi));
     return `<div class="markdown-sync-block" data-md-start="${range.start}" data-md-end="${range.end}">${parsed}</div>`;
   }).join('');
 }
 
 function renderMarkdownInto(root, item) {
   const markdown = item.markdown || '';
-  const rawRanges = item.rawConfidenceRanges || buildRawHighlightRanges(markdown, item);
   const parsed = renderAnchoredMarkdown(markdown);
   const clean = DOMPurify.sanitize(parsed, {
     ADD_ATTR: ['target', 'rel', 'data-md-start', 'data-md-end']
@@ -484,10 +613,6 @@ function renderMarkdownInto(root, item) {
   resolveRenderedImages(root, item.images || []);
   upgradeLinks(root);
   renderMath(root);
-  applyConfidenceHighlights(root, {
-    ...item,
-    resolvedConfidenceScores: rawRanges.map((range) => range.score)
-  });
   scheduleAnchorBuild();
 }
 
@@ -507,9 +632,6 @@ function printableStyles() {
       --text: #18212a;
       --muted: #66717d;
       --code-bg: #f0f3f6;
-      --confidence-yellow: #fff3a3;
-      --confidence-orange: #ffd0a1;
-      --confidence-red: #ffc9c9;
     }
     @page { margin: 18mm 16mm; }
     * { box-sizing: border-box; }
@@ -609,31 +731,22 @@ function printableStyles() {
       border-top: 1px solid var(--border);
       margin: 1.6em 0;
     }
-    .confidence-low {
-      border-radius: 3px;
-      color: inherit;
-      padding: 0.02em 0.12em;
-    }
-    .confidence-yellow { background: var(--confidence-yellow); }
-    .confidence-orange { background: var(--confidence-orange); }
-    .confidence-red { background: var(--confidence-red); }
     a { color: inherit; text-decoration: none; }
   `;
 }
 
 function buildPrintableRenderedHtml() {
-  const rawConfidenceRanges = buildRawHighlightRanges(draftMarkdown, currentItem);
   const scratch = document.createElement('div');
   scratch.className = 'markdown-body';
-  renderMarkdownInto(scratch, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
+  renderMarkdownInto(scratch, { ...currentItem, markdown: draftMarkdown });
   for (const img of scratch.querySelectorAll('img')) img.removeAttribute('loading');
   return scratch.innerHTML;
 }
 
 function printableMetaHtml(item) {
   const parts = [
-    `SHA: ${item.hash}`,
-    tr('type_value', [item.resourceKind || tr('unknown')]),
+    tr('original_sha', [item.hash]),
+    tr('type_value', [resourceDisplay.previewSummary(item)]),
     tr('pages_count', [String(item.pages ?? 0)]),
     tr('images_count', [String(item.imagesCount ?? 0)]),
     tr('updated_at', [formatDate(item.updatedAt || item.createdAt)])
@@ -649,8 +762,13 @@ function safePdfFileName(name) {
   return safeName.toLowerCase().endsWith('.pdf') ? safeName : `${safeName}.pdf`;
 }
 
-function buildPdfExportHtml() {
+function buildPdfExportHtml({ includeMetadata = false } = {}) {
   const title = currentItem?.name || 'Preview';
+  const metadataHeader = includeMetadata ? `
+    <header class="print-header">
+      <h1>${escapeHtml(title)}</h1>
+      <div class="print-meta">${printableMetaHtml(currentItem || {})}</div>
+    </header>` : '';
   return `<!doctype html>
 <html>
   <head>
@@ -660,10 +778,7 @@ function buildPdfExportHtml() {
     <style>${printableStyles()}</style>
   </head>
   <body>
-    <header class="print-header">
-      <h1>${escapeHtml(title)}</h1>
-      <div class="print-meta">${printableMetaHtml(currentItem || {})}</div>
-    </header>
+    ${metadataHeader}
     <main class="markdown-body">${buildPrintableRenderedHtml()}</main>
   </body>
 </html>`;
@@ -732,12 +847,30 @@ function renderConfidenceSummary(item) {
 
 function renderHeader(item) {
   titleEl.textContent = item.name || 'Preview/Edit';
+  titleEl.title = item.name || 'Preview/Edit';
+  renameTitleBtn.hidden = false;
   document.title = `${item.name || 'Preview/Edit'} - Mistral OCR`;
+  resourceIdentityEl.innerHTML = '';
+
+  const iconUrl = resourceDisplay.iconUrl(item.resourceFormat);
+  if (iconUrl) {
+    const icon = document.createElement('img');
+    icon.className = 'preview-resource-icon';
+    icon.src = iconUrl;
+    icon.alt = resourceDisplay.previewSummary(item);
+    resourceIdentityEl.appendChild(icon);
+  }
+
+  const identity = document.createElement('span');
+  identity.className = 'preview-resource-label';
+  identity.textContent = resourceDisplay.previewSummary(item);
+  resourceIdentityEl.appendChild(identity);
+
   metaEl.innerHTML = '';
 
   const parts = [
-    `SHA: ${item.hash}`,
-    tr('type_value', [item.resourceKind || tr('unknown')]),
+    tr('original_sha', [item.hash]),
+    tr('type_value', [resourceDisplay.previewSummary(item)]),
     tr('pages_count', [String(item.pages ?? 0)]),
     tr('images_count', [String(item.imagesCount ?? 0)]),
     tr('updated_at', [formatDate(item.updatedAt || item.createdAt)])
@@ -750,6 +883,71 @@ function renderHeader(item) {
   }
 }
 
+function beginRenameTitle() {
+  if (!currentItem || !renameTitleBtn || !titleEl.parentElement || titleEl.tagName === 'INPUT') return;
+
+  const originalTitle = titleEl.textContent || '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'inline-name-input';
+  input.value = currentItem.name || originalTitle;
+  input.placeholder = tr('rename_name_placeholder');
+  input.setAttribute('aria-label', tr('rename_transcription'));
+
+  let finished = false;
+  let saving = false;
+  const cancel = () => {
+    if (finished) return;
+    finished = true;
+    input.replaceWith(titleEl);
+    renameTitleBtn.hidden = false;
+  };
+  const save = async () => {
+    if (finished || saving) return;
+    const validationError = validateTranscriptionName(input.value);
+    if (validationError) {
+      setStatus(validationError, true);
+      input.focus();
+      return;
+    }
+
+    saving = true;
+    const resp = await sendMessage({
+      type: 'RENAME_TRANSCRIPTION',
+      hash: currentItem.hash,
+      name: input.value.trim()
+    });
+    saving = false;
+    if (!resp?.ok || !resp.entry) {
+      setStatus(resp?.error || tr('could_not_rename'), true);
+      input.focus();
+      return;
+    }
+
+    finished = true;
+    input.replaceWith(titleEl);
+    renameTitleBtn.hidden = false;
+    currentItem = { ...currentItem, ...resp.entry };
+    renderHeader(currentItem);
+    setStatus(tr('rename_saved'));
+  };
+
+  titleEl.replaceWith(input);
+  renameTitleBtn.hidden = true;
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancel();
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      input.blur();
+    }
+  });
+  input.addEventListener('blur', save);
+  input.focus();
+  input.select();
+}
+
 function renderPreview(item) {
   currentItem = {
     ...item,
@@ -760,7 +958,7 @@ function renderPreview(item) {
   renderHeader(currentItem);
   renderConfidenceSummary(currentItem);
   renderRawEditor(draftMarkdown, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
-  renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
+  renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown });
   setStatus('');
 }
 
@@ -770,19 +968,23 @@ function configureAutoSave(disabled) {
 }
 
 function textNodeAtOffset(root, offset) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let remaining = Math.max(0, offset);
-  let node;
-  let lastNode = null;
+  const entries = collectEditorTextNodes(root);
+  const target = Math.max(0, offset);
+  let previous = null;
 
-  while ((node = walker.nextNode())) {
-    lastNode = node;
-    const length = node.nodeValue.length;
-    if (remaining <= length) return { node, offset: remaining };
-    remaining -= length;
+  for (const entry of entries) {
+    if (target < entry.start) {
+      return previous
+        ? { node: previous.node, offset: previous.node.nodeValue.length }
+        : { node: entry.node, offset: 0 };
+    }
+    if (target <= entry.end) {
+      return { node: entry.node, offset: target - entry.start };
+    }
+    previous = entry;
   }
 
-  return lastNode ? { node: lastNode, offset: lastNode.nodeValue.length } : null;
+  return previous ? { node: previous.node, offset: previous.node.nodeValue.length } : null;
 }
 
 function textOffsetTop(root, offset) {
@@ -854,6 +1056,12 @@ function textOffsetFromSelection(root) {
   if (!selection?.rangeCount) return null;
   const range = selection.getRangeAt(0);
   if (!root.contains(range.endContainer)) return null;
+
+  if (range.endContainer.nodeType === Node.TEXT_NODE) {
+    const entry = collectEditorTextNodes(root).find((item) => item.node === range.endContainer);
+    if (entry) return entry.start + Math.min(range.endOffset, range.endContainer.nodeValue.length);
+  }
+
   const probe = range.cloneRange();
   probe.selectNodeContents(root);
   probe.setEnd(range.endContainer, range.endOffset);
@@ -862,21 +1070,31 @@ function textOffsetFromSelection(root) {
 
 function restoreSelectionFromTextOffset(root, offset) {
   if (typeof offset !== 'number') return;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let remaining = offset;
-  let node;
-  while ((node = walker.nextNode())) {
-    const length = node.nodeValue.length;
-    if (remaining <= length) {
-      const range = document.createRange();
-      range.setStart(node, Math.max(0, remaining));
-      range.collapse(true);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-      return;
+  const entries = collectEditorTextNodes(root);
+  const target = Math.max(0, offset);
+  let previous = null;
+
+  for (const entry of entries) {
+    let node = entry.node;
+    let nodeOffset;
+
+    if (target < entry.start) {
+      node = previous?.node || entry.node;
+      nodeOffset = previous ? previous.node.nodeValue.length : 0;
+    } else if (target <= entry.end) {
+      nodeOffset = target - entry.start;
+    } else {
+      previous = entry;
+      continue;
     }
-    remaining -= length;
+
+    const range = document.createRange();
+    range.setStart(node, Math.max(0, Math.min(nodeOffset, node.nodeValue.length)));
+    range.collapse(true);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return;
   }
 
   const range = document.createRange();
@@ -887,19 +1105,55 @@ function restoreSelectionFromTextOffset(root, offset) {
   selection.addRange(range);
 }
 
+function isEditorBlockElement(node) {
+  return node.nodeType === Node.ELEMENT_NODE && (node.nodeName === 'DIV' || node.nodeName === 'P');
+}
+
+function buildEditorTextModel(root) {
+  const entries = [];
+  const state = { offset: 0, lastChar: '', text: '' };
+
+  function append(value) {
+    if (!value) return;
+    state.text += value;
+    state.offset += value.length;
+    state.lastChar = value[value.length - 1];
+  }
+
+  function visit(node, isRoot = false) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const value = node.nodeValue || '';
+      const start = state.offset;
+      append(value);
+      entries.push({ node, start, end: state.offset });
+      return;
+    }
+
+    if (node.nodeName === 'BR') {
+      append('\n');
+      return;
+    }
+
+    const isBlock = !isRoot && isEditorBlockElement(node);
+    if (isBlock && state.offset > 0 && state.lastChar !== '\n') append('\n');
+
+    for (const child of node.childNodes) visit(child);
+
+    if (isBlock && state.offset > 0 && state.lastChar !== '\n') append('\n');
+  }
+
+  visit(root, true);
+  return { entries, text: state.text };
+}
+
+function collectEditorTextNodes(root) {
+  return buildEditorTextModel(root).entries;
+}
+
 function editorTextFromNode(node) {
   if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
   if (node.nodeName === 'BR') return '\n';
-
-  let text = '';
-  for (const child of node.childNodes) {
-    text += editorTextFromNode(child);
-  }
-
-  if (node !== rawEditorEl && (node.nodeName === 'DIV' || node.nodeName === 'P') && !text.endsWith('\n')) {
-    text += '\n';
-  }
-  return text;
+  return buildEditorTextModel(node).text;
 }
 
 function readDraftFromEditor() {
@@ -914,53 +1168,132 @@ function scheduleRenderedRefresh() {
       renderTimer = null;
       renderFrame = null;
       if (!currentItem) return;
-      const rawConfidenceRanges = buildRawHighlightRanges(draftMarkdown, currentItem);
-      renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
-      scheduleRawScrollSync();
+      renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown });
+      scheduleRenderedToRawScrollSync();
     });
   }, 650);
 }
 
-function syncRawToRenderedScroll() {
-  if (isSyncingScroll) return;
-  isSyncingScroll = true;
-  const target = renderedScrollToRaw(splitRenderedEl.scrollTop);
-  rawEditorEl.scrollTop = target;
+function clearScrollSyncOrigin() {
+  scrollSyncOrigin = '';
+}
+
+function syncRenderedToRawScroll() {
+  if (scrollSyncOrigin === 'raw') {
+    clearScrollSyncOrigin();
+    return;
+  }
+
+  scrollSyncOrigin = 'rendered';
+  rawEditorEl.scrollTop = renderedScrollToRaw(splitRenderedEl.scrollTop);
   requestAnimationFrame(() => {
-    isSyncingScroll = false;
+    if (scrollSyncOrigin === 'rendered') clearScrollSyncOrigin();
   });
 }
 
-function scheduleRawScrollSync() {
-  if (rawSyncFrame) cancelAnimationFrame(rawSyncFrame);
-  rawSyncFrame = requestAnimationFrame(() => {
-    rawSyncFrame = null;
+function syncRawToRenderedScroll() {
+  if (scrollSyncOrigin === 'rendered') {
+    clearScrollSyncOrigin();
+    return;
+  }
+
+  scrollSyncOrigin = 'raw';
+  splitRenderedEl.scrollTop = rawScrollToRendered(rawEditorEl.scrollTop);
+  requestAnimationFrame(() => {
+    if (scrollSyncOrigin === 'raw') clearScrollSyncOrigin();
+  });
+}
+
+function scheduleRenderedToRawScrollSync() {
+  if (scrollSyncFrame) cancelAnimationFrame(scrollSyncFrame);
+  scrollSyncFrame = requestAnimationFrame(() => {
+    scrollSyncFrame = null;
+    syncRenderedToRawScroll();
+  });
+}
+
+function scheduleRawToRenderedScrollSync() {
+  if (scrollSyncFrame) cancelAnimationFrame(scrollSyncFrame);
+  scrollSyncFrame = requestAnimationFrame(() => {
+    scrollSyncFrame = null;
     syncRawToRenderedScroll();
   });
 }
 
-function interpolateBetweenAnchors(position) {
+function isTouchLikePointer(event) {
+  return event?.pointerType === 'touch' || event?.pointerType === 'pen';
+}
+
+function clearTouchScrollReleaseTimer() {
+  if (!touchScrollReleaseTimer) return;
+  clearTimeout(touchScrollReleaseTimer);
+  touchScrollReleaseTimer = null;
+}
+
+function releaseTouchScrollSource() {
+  clearTouchScrollReleaseTimer();
+  touchScrollSource = null;
+  touchScrollPointerId = null;
+  scrollSyncOrigin = '';
+}
+
+function scheduleTouchScrollRelease() {
+  clearTouchScrollReleaseTimer();
+  touchScrollReleaseTimer = setTimeout(() => {
+    touchScrollReleaseTimer = null;
+    releaseTouchScrollSource();
+  }, 260);
+}
+
+function beginTouchScrollSource(source, pointerId = null) {
+  if (touchScrollSource !== source) {
+    touchScrollSource = source;
+    touchScrollPointerId = pointerId;
+    scrollSyncOrigin = '';
+    if (scrollSyncFrame) cancelAnimationFrame(scrollSyncFrame);
+    scrollSyncFrame = null;
+  }
+  scheduleTouchScrollRelease();
+}
+
+function scheduleTouchScrollSync(source) {
+  if (touchScrollSource !== source) return;
+  clearTouchScrollReleaseTimer();
+  if (scrollSyncFrame) cancelAnimationFrame(scrollSyncFrame);
+  scrollSyncFrame = requestAnimationFrame(() => {
+    scrollSyncFrame = null;
+    if (touchScrollSource !== source) return;
+    if (source === rawEditorEl) {
+      syncRawToRenderedScroll();
+    } else {
+      syncRenderedToRawScroll();
+    }
+    scheduleTouchScrollRelease();
+  });
+}
+
+function interpolateBetweenAnchors(position, sourceKey, targetKey) {
   if (scrollAnchors.length < 2) return null;
 
-  const anchors = scrollAnchors;
+  const anchors = [...scrollAnchors].sort((a, b) => a[sourceKey] - b[sourceKey]);
   let previous = anchors[0];
   let next = anchors[anchors.length - 1];
 
   for (let i = 0; i < anchors.length - 1; i++) {
-    if (position >= anchors[i].renderedTop && position <= anchors[i + 1].renderedTop) {
+    if (position >= anchors[i][sourceKey] && position <= anchors[i + 1][sourceKey]) {
       previous = anchors[i];
       next = anchors[i + 1];
       break;
     }
   }
 
-  const span = next.renderedTop - previous.renderedTop;
-  const progress = span > 0 ? (position - previous.renderedTop) / span : 0;
-  return previous.rawTop + (next.rawTop - previous.rawTop) * Math.min(1, Math.max(0, progress));
+  const span = next[sourceKey] - previous[sourceKey];
+  const progress = span > 0 ? (position - previous[sourceKey]) / span : 0;
+  return previous[targetKey] + (next[targetKey] - previous[targetKey]) * Math.min(1, Math.max(0, progress));
 }
 
 function renderedScrollToRaw(renderedTop) {
-  const target = interpolateBetweenAnchors(renderedTop);
+  const target = interpolateBetweenAnchors(renderedTop, 'renderedTop', 'rawTop');
   if (typeof target === 'number' && Number.isFinite(target)) {
     return target;
   }
@@ -969,6 +1302,18 @@ function renderedScrollToRaw(renderedTop) {
   const rawMax = rawEditorEl.scrollHeight - rawEditorEl.clientHeight;
   const ratio = renderedMax > 0 ? renderedTop / renderedMax : 0;
   return rawMax > 0 ? ratio * rawMax : 0;
+}
+
+function rawScrollToRendered(rawTop) {
+  const target = interpolateBetweenAnchors(rawTop, 'rawTop', 'renderedTop');
+  if (typeof target === 'number' && Number.isFinite(target)) {
+    return target;
+  }
+
+  const renderedMax = splitRenderedEl.scrollHeight - splitRenderedEl.clientHeight;
+  const rawMax = rawEditorEl.scrollHeight - rawEditorEl.clientHeight;
+  const ratio = rawMax > 0 ? rawTop / rawMax : 0;
+  return renderedMax > 0 ? ratio * renderedMax : 0;
 }
 
 function wheelDeltaPixels(event) {
@@ -982,9 +1327,11 @@ function wheelDeltaPixels(event) {
 }
 
 function removeConfidenceMarks(key) {
-  for (const mark of document.querySelectorAll('mark.confidence-low')) {
+  for (const mark of rawEditorEl.querySelectorAll('mark.confidence-low')) {
     if (mark.dataset.confidenceKey !== key) continue;
-    mark.replaceWith(document.createTextNode(mark.textContent || ''));
+    const replacement = document.createDocumentFragment();
+    while (mark.firstChild) replacement.appendChild(mark.firstChild);
+    mark.replaceWith(replacement);
   }
 }
 
@@ -1042,7 +1389,7 @@ async function persistConfidenceDecision(key, { silent = false } = {}) {
     currentItem.confidenceDecisions = previousDecisions;
     const rawConfidenceRanges = buildRawHighlightRanges(draftMarkdown, currentItem);
     renderRawEditor(draftMarkdown, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
-    renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
+    renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown });
     if (!silent) setStatus(resp?.error || tr('could_not_update_word'), true);
     return;
   }
@@ -1070,7 +1417,7 @@ async function preserveAllConfidenceWords() {
 
   const rawConfidenceRanges = buildRawHighlightRanges(draftMarkdown, currentItem);
   renderRawEditor(draftMarkdown, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
-  renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges });
+  renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown });
   renderConfidenceSummary({ ...currentItem, markdown: draftMarkdown });
   setStatus(tr('all_marked_words_kept'));
 
@@ -1083,7 +1430,7 @@ async function preserveAllConfidenceWords() {
     currentItem.confidenceDecisions = previousDecisions;
     const rollbackRanges = buildRawHighlightRanges(draftMarkdown, currentItem);
     renderRawEditor(draftMarkdown, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges: rollbackRanges });
-    renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown, rawConfidenceRanges: rollbackRanges });
+    renderMarkdownInto(splitRenderedEl, { ...currentItem, markdown: draftMarkdown });
     renderConfidenceSummary({ ...currentItem, markdown: draftMarkdown });
     setStatus(resp?.error || tr('could_not_keep_all_words'), true);
     return;
@@ -1143,9 +1490,14 @@ async function exportImages() {
 async function exportRenderedPdf() {
   if (!currentItem) return;
   readDraftFromEditor();
-  setStatus(tr('preparing_pdf'));
+  setStatus(tr('preparing_pdf'), { tone: 'progress' });
 
-  const blobUrl = URL.createObjectURL(new Blob([buildPdfExportHtml()], { type: 'text/html' }));
+  const settings = await new Promise((resolve) => {
+    chrome.storage.local.get(['includePdfMetadata'], resolve);
+  });
+  const blobUrl = URL.createObjectURL(new Blob([
+    buildPdfExportHtml({ includeMetadata: settings.includePdfMetadata === true })
+  ], { type: 'text/html' }));
   try {
     const resp = await sendMessage({
       type: 'EXPORT_RENDERED_PDF',
@@ -1163,7 +1515,7 @@ async function exportRenderedPdf() {
 async function saveMarkdown() {
   if (!currentItem) return;
   readDraftFromEditor();
-  setStatus(tr('saving_changes'));
+  setStatus(tr('saving_changes'), { tone: 'progress' });
   const resp = await sendMessage({
     type: 'SAVE_MARKDOWN',
     hash: currentItem.hash,
@@ -1174,6 +1526,7 @@ async function saveMarkdown() {
     return;
   }
 
+  disableClassicLatexRendering = resp.disableClassicLatexRendering === true;
   renderPreview(resp.item);
   setStatus(tr('changes_saved'));
 }
@@ -1192,13 +1545,14 @@ function scheduleAutoSave() {
       setStatus(resp?.error || tr('could_not_auto_save_changes'), true);
       return;
     }
+    disableClassicLatexRendering = resp.disableClassicLatexRendering === true;
     currentItem = {
       ...currentItem,
       ...resp.item,
       markdown: draftMarkdown,
       confidenceDecisions: resp.item.confidenceDecisions || currentItem.confidenceDecisions || {}
     };
-    setStatus(tr('changes_auto_saved'));
+    setStatus(tr('changes_auto_saved'), { duration: 1500 });
   }, 900);
 }
 
@@ -1209,7 +1563,7 @@ async function load() {
     return;
   }
 
-  setStatus(tr('loading_preview'));
+  setStatus(tr('loading_preview'), { tone: 'progress' });
   const resp = await sendMessage({ type: 'GET_PREVIEW_DATA', hash });
   if (!resp?.ok || !resp.item) {
     setStatus(resp?.error || tr('could_not_load_preview'), true);
@@ -1217,6 +1571,7 @@ async function load() {
   }
 
   configureAutoSave(resp.previewAutoSaveDisabled === true);
+  disableClassicLatexRendering = resp.disableClassicLatexRendering === true;
   renderPreview(resp.item);
 }
 
@@ -1224,6 +1579,7 @@ rawEditorEl.addEventListener('input', () => {
   const caretOffset = textOffsetFromSelection(rawEditorEl);
   readDraftFromEditor();
   persistEditedConfidenceMarks(caretOffset);
+  refreshMarkdownSyntaxColor(caretOffset);
   scheduleRenderedRefresh();
   scheduleAutoSave();
 });
@@ -1233,31 +1589,107 @@ rawEditorEl.addEventListener('wheel', (event) => {
   const delta = wheelDeltaPixels(event);
   splitRenderedEl.scrollTop += delta.y;
   splitRenderedEl.scrollLeft += delta.x;
-  syncRawToRenderedScroll();
+  syncRenderedToRawScroll();
 }, { passive: false });
 
-rawEditorEl.addEventListener('scroll', () => {
-  if (!isSyncingScroll) scheduleRawScrollSync();
-});
+function handleRawScroll() {
+  if (touchScrollSource) {
+    scheduleTouchScrollSync(rawEditorEl);
+    return;
+  }
+  if (scrollSyncOrigin !== 'rendered') scheduleRawToRenderedScrollSync();
+}
 
-splitRenderedEl.addEventListener('scroll', syncRawToRenderedScroll);
+function handleRenderedScroll() {
+  if (touchScrollSource) {
+    scheduleTouchScrollSync(splitRenderedEl);
+    return;
+  }
+  syncRenderedToRawScroll();
+}
 
-document.addEventListener('mouseover', (event) => {
+rawEditorEl.addEventListener('scroll', handleRawScroll);
+splitRenderedEl.addEventListener('scroll', handleRenderedScroll);
+
+function handleTouchPointerDown(event) {
+  if (!isTouchLikePointer(event)) return;
+  beginTouchScrollSource(event.currentTarget, event.pointerId ?? null);
+}
+
+function handleTouchPointerRelease(event) {
+  if (!touchScrollSource) return;
+  if (touchScrollPointerId !== null && event.pointerId !== undefined && event.pointerId !== touchScrollPointerId) return;
+  scheduleTouchScrollRelease();
+}
+
+function handleTouchStart(event) {
+  beginTouchScrollSource(event.currentTarget);
+}
+
+function handleTouchEnd() {
+  if (touchScrollSource) scheduleTouchScrollRelease();
+}
+
+for (const viewer of [rawEditorEl, splitRenderedEl]) {
+  viewer.addEventListener('pointerdown', handleTouchPointerDown, { passive: true });
+  viewer.addEventListener('pointerup', handleTouchPointerRelease, { passive: true });
+  viewer.addEventListener('pointercancel', handleTouchPointerRelease, { passive: true });
+  viewer.addEventListener('touchstart', handleTouchStart, { passive: true });
+  viewer.addEventListener('touchend', handleTouchEnd, { passive: true });
+  viewer.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+}
+
+rawEditorEl.addEventListener('mouseover', (event) => {
   const mark = event.target.closest?.('.confidence-low');
   if (mark) showConfidencePopover(mark);
 });
 
-document.addEventListener('mouseout', (event) => {
+rawEditorEl.addEventListener('mouseout', (event) => {
   if (event.target.closest?.('.confidence-low')) scheduleHideConfidencePopover();
 });
 
 confidencePopoverEl.addEventListener('mouseover', () => clearTimeout(hidePopoverTimer));
 confidencePopoverEl.addEventListener('mouseout', scheduleHideConfidencePopover);
 confidenceKeepBtn.addEventListener('click', () => persistConfidenceDecision(activeConfidenceKey));
+statusDismissBtn.addEventListener('click', () => setStatus(''));
+detailsToggleBtn.addEventListener('click', () => {
+  setPreviewDetailsExpanded(previewDetailsEl.hidden, { persist: true });
+});
 saveMdBtn.addEventListener('click', saveMarkdown);
 copyRawBtn.addEventListener('click', copyRaw);
-exportMdBtn.addEventListener('click', exportMarkdown);
-exportPdfBtn.addEventListener('click', exportRenderedPdf);
-exportImagesBtn.addEventListener('click', exportImages);
+exportMdBtn.addEventListener('click', () => {
+  closeExportMenu();
+  void exportMarkdown();
+});
+exportPdfBtn.addEventListener('click', () => {
+  closeExportMenu();
+  void exportRenderedPdf();
+});
+exportImagesBtn.addEventListener('click', () => {
+  closeExportMenu();
+  void exportImages();
+});
+renameTitleBtn.addEventListener('click', beginRenameTitle);
 
-load();
+document.addEventListener('click', (event) => {
+  if (exportMenuEl.open && !exportMenuEl.contains(event.target)) closeExportMenu();
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && exportMenuEl.open) {
+    event.preventDefault();
+    closeExportMenu({ restoreFocus: true });
+  }
+});
+
+if (typeof ResizeObserver === 'function') {
+  viewerResizeObserver = new ResizeObserver(scheduleAnchorBuild);
+  viewerResizeObserver.observe(splitModeEl);
+  viewerResizeObserver.observe(rawEditorEl);
+  viewerResizeObserver.observe(splitRenderedEl);
+} else {
+  window.addEventListener('resize', scheduleAnchorBuild);
+}
+
+void loadPreviewDetailsPreference();
+void load();

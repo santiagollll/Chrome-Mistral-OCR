@@ -13,6 +13,14 @@
     return chrome.i18n.getMessage(key, substitutions) || key;
   }
 
+  function getUserFacingError(message) {
+    const normalized = String(message || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (normalized === 'could not establish connection. receiving end does not exist.') {
+      return t('error_refresh_page_required');
+    }
+    return message;
+  }
+
   function applyText(el, key) {
     const value = t(key);
     if (value) el.textContent = value;
@@ -56,6 +64,7 @@
   }
 
   window.t = t;
+  window.getUserFacingError = getUserFacingError;
   window.localizeDocument = localizeDocument;
   window.refreshDocumentIcon = refreshDocumentIcon;
 

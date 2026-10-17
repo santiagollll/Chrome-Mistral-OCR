@@ -11,6 +11,7 @@ import {
   getPreviewData,
   listDetailedEntries,
   listEntries,
+  renameEntry,
   updateConfidenceDecision,
   updateConfidenceDecisions,
   updateMarkdown
@@ -25,6 +26,7 @@ import {
   downloadsDownload,
   ensureOffscreenDocument,
   hasOffscreenDocument,
+  isAllowedFileSchemeAccess,
   lastPdfByTab,
   notificationsCreate,
   registerPdfHeaderObserver,
@@ -45,6 +47,7 @@ import {
   getIncludeImagesPref,
   getIndex,
   getLastOcrJobNotice,
+  getDisableClassicLatexRenderingPref,
   getPreviewAutoSaveDisabledPref,
   hasApiKey,
   hasSecondaryApiKey,
@@ -52,6 +55,7 @@ import {
   setActiveApiKeySlot,
   setActiveOcrJob,
   setIncludeImagesPref,
+  setGoogleExportFormatSelection,
   setLastOcrJobNotice
 } from './bg/storage.js';
 import { msg as trMsg } from './bg/i18n.js';
@@ -64,7 +68,7 @@ let activePreparationController = null;
 let activeJobSourceTabId = null;
 let activeJobPhase = 'idle';
 
-function buildEntry({ hash, url, displayName, initialName, resourceKind, imagesCount, pages }) {
+function buildEntry({ hash, url, displayName, initialName, resourceKind, resourceOrigin, resourceProvider, resourceFormat, imagesCount, pages }) {
   const createdAt = Date.now();
   return {
     hash,
@@ -74,11 +78,14 @@ function buildEntry({ hash, url, displayName, initialName, resourceKind, imagesC
     updatedAt: createdAt,
     pages,
     imagesCount,
-    resourceKind: resourceKind || null
+    resourceKind: resourceKind || null,
+    resourceOrigin: resourceOrigin || null,
+    resourceProvider: resourceProvider || null,
+    resourceFormat: resourceFormat || null
   };
 }
 
-function buildUpdatedEntry(previousEntry, { hash, url, displayName, initialName, resourceKind, imagesCount, pages }) {
+function buildUpdatedEntry(previousEntry, { hash, url, displayName, initialName, resourceKind, resourceOrigin, resourceProvider, resourceFormat, imagesCount, pages }) {
   const now = Date.now();
   return {
     hash,
@@ -88,7 +95,10 @@ function buildUpdatedEntry(previousEntry, { hash, url, displayName, initialName,
     updatedAt: now,
     pages,
     imagesCount,
-    resourceKind: resourceKind || previousEntry?.resourceKind || null
+    resourceKind: resourceKind || previousEntry?.resourceKind || null,
+    resourceOrigin: resourceOrigin || previousEntry?.resourceOrigin || null,
+    resourceProvider: resourceProvider || previousEntry?.resourceProvider || null,
+    resourceFormat: resourceFormat || previousEntry?.resourceFormat || null
   };
 }
 
@@ -130,6 +140,11 @@ function deriveFileDisplayName({ url, initialName, provided, contentDisposition 
   );
 }
 
+function extensionFromFileName(name) {
+  const match = String(name || '').match(/\.([A-Za-z0-9]+)$/);
+  return match ? match[1].toLowerCase() : null;
+}
+
 function buildJobId() {
   if (crypto?.randomUUID) return crypto.randomUUID();
   return `job-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -157,6 +172,30 @@ function equivalentResourceUrls(resourceState) {
   ].filter(Boolean)));
 }
 
+function isFileUrl(url) {
+  try {
+    return new URL(url || '').protocol === 'file:';
+  } catch {
+    return false;
+  }
+}
+
+function fileUrlAccessError() {
+  const error = new Error(trMsg('error_file_url_access_required'));
+  error.code = 'FILE_URL_ACCESS_REQUIRED';
+  return error;
+}
+
+async function getLocalFileAccessState(tab, resourceState = {}) {
+  const isLocalFile = isFileUrl(tab?.url) || isFileUrl(resourceState.resourceUrl);
+  const fileUrlAccessAllowed = !isLocalFile || await isAllowedFileSchemeAccess();
+  return {
+    isLocalFile,
+    fileUrlAccessAllowed,
+    fileUrlAccessBlocked: !!resourceState.isOcrable && isLocalFile && !fileUrlAccessAllowed
+  };
+}
+
 function localizeMaybe(keyOrMessage, fallbackKey) {
   if (!keyOrMessage) return trMsg(fallbackKey);
   const localized = trMsg(keyOrMessage);
@@ -165,17 +204,64 @@ function localizeMaybe(keyOrMessage, fallbackKey) {
     : localized;
 }
 
+function normalizeErrorDetails({
+  error,
+  code,
+  description,
+  category,
+  httpStatus,
+  mistralCode,
+  rateLimitHeaders,
+  fallbackKey = 'error_background_ocr_failed'
+}) {
+  const rawDescription = description
+    || error?.description
+    || (typeof error === 'string' ? error : error?.message)
+    || trMsg(fallbackKey);
+  const normalizedDescription = localizeMaybe(rawDescription, fallbackKey);
+  const rawCode = code || error?.code || error?.status;
+  const normalizedCode = rawCode
+    ? String(rawCode)
+    : (/fetch|network/i.test(normalizedDescription) ? 'NETWORK_ERROR' : 'OCR_ERROR');
+  return {
+    code: normalizedCode,
+    description: normalizedDescription,
+    category: category || error?.category || null,
+    httpStatus: httpStatus ?? error?.status ?? null,
+    mistralCode: mistralCode ?? error?.mistralCode ?? null,
+    rateLimitHeaders: rateLimitHeaders || error?.rateLimitHeaders || {}
+  };
+}
+
 async function consumeLastOcrJobNotice() {
   const notice = await getLastOcrJobNotice();
   if (notice) await clearLastOcrJobNotice();
   return notice;
 }
 
-async function rememberOcrJobNotice({ level, title, message, job }) {
+async function rememberOcrJobNotice({
+  level,
+  title,
+  message,
+  code,
+  description,
+  category,
+  httpStatus,
+  mistralCode,
+  rateLimitHeaders,
+  job
+}) {
+  const errorDescription = description || message || '';
   await setLastOcrJobNotice({
     level,
     title,
-    message,
+    message: errorDescription,
+    code: code ? String(code) : null,
+    description: errorDescription,
+    category: category || null,
+    httpStatus: httpStatus ?? null,
+    mistralCode: mistralCode ?? null,
+    rateLimitHeaders: rateLimitHeaders || {},
     jobId: job?.id || null,
     displayName: job?.displayName || job?.resourceLabel || null,
     createdAt: Date.now()
@@ -229,6 +315,7 @@ async function handleCancelOutcome(reason, notify = true) {
     level: 'warning',
     title: trMsg('notification_ocr_canceled_title'),
     message: reason || trMsg('ocr_canceled_background'),
+    code: 'CANCELED',
     job: current
   });
   if (notify) {
@@ -293,6 +380,18 @@ async function prepareJobContext(forceOverwrite, googleExportFormatOverrides = {
   const [tab] = await tabsQuery({ active: true, currentWindow: true });
   if (!tab?.id) throw new Error(trMsg('error_no_active_tab'));
 
+  let fileUrlAccessChecked = false;
+  let fileUrlAccessAllowed = true;
+  const assertFileUrlAccess = async (url) => {
+    if (!isFileUrl(url)) return;
+    if (!fileUrlAccessChecked) {
+      fileUrlAccessAllowed = await isAllowedFileSchemeAccess();
+      fileUrlAccessChecked = true;
+    }
+    if (!fileUrlAccessAllowed) throw fileUrlAccessError();
+  };
+  await assertFileUrlAccess(tab.url);
+
   const preparationController = new AbortController();
   activePreparationController = preparationController;
   activeJobSourceTabId = tab.id;
@@ -304,6 +403,9 @@ async function prepareJobContext(forceOverwrite, googleExportFormatOverrides = {
     sourceTabId: tab.id,
     resourceUrl: null,
     resourceKind: null,
+    resourceOrigin: null,
+    resourceProvider: null,
+    resourceFormat: null,
     resourceLabel: null,
     displayName: null,
     forceOverwrite: !!forceOverwrite,
@@ -324,10 +426,14 @@ async function prepareJobContext(forceOverwrite, googleExportFormatOverrides = {
   const resolved = await resolveResourceForTab(tab, googleExportPrefs);
   const { url, name: initialName, type, ab: providedBuffer, provided } = resolved;
   if (!url || !type) throw new Error(trMsg('error_no_ocrable_resource'));
+  await assertFileUrlAccess(url);
 
   await updateActiveJob({
     resourceUrl: url,
     resourceKind: resolved.resourceKind || type,
+    resourceOrigin: resolved.resourceOrigin,
+    resourceProvider: resolved.resourceProvider,
+    resourceFormat: resolved.resourceFormat || (type === 'pdf' ? 'pdf' : null),
     resourceLabel: resolved.resourceLabel || (type === 'image' ? trMsg('resource_image') : type === 'pdf' ? 'PDF' : trMsg('resource_document')),
     message: trMsg('capturing_initial_resource')
   });
@@ -352,26 +458,21 @@ async function prepareJobContext(forceOverwrite, googleExportFormatOverrides = {
   });
   const hash = await sha256Hex(ab);
   const { ocrIndex, urlToHash } = await getIndex();
-  const equivalentUrls = equivalentResourceUrls({
-    resourceUrl: url,
-    googleExportOptions: resolved.googleExportOptions
-  });
-  const existingForEquivalentUrl = await checkExistingForUrls(equivalentUrls);
-  const existingForUrlHash = existingForEquivalentUrl.found ? existingForEquivalentUrl.hash : null;
+  const existingForSelectedUrl = await checkExistingForUrls([url]);
+  const existingForUrlHash = existingForSelectedUrl.found ? existingForSelectedUrl.hash : null;
   const existingForUrlEntry = existingForUrlHash ? ocrIndex[existingForUrlHash] : null;
-  const existingForUrlMatchedUrl = existingForEquivalentUrl.found ? existingForEquivalentUrl.matchedUrl : null;
+  const existingForUrlMatchedUrl = existingForSelectedUrl.found ? existingForSelectedUrl.matchedUrl : null;
 
-  if (ocrIndex[hash] && !forceOverwrite) {
-    urlToHash[url] = hash;
-    await saveIndex(ocrIndex, urlToHash);
+  if (existingForUrlEntry && !forceOverwrite) {
     await finalizeAndClearJob();
     return {
       immediate: true,
-      result: { status: 'exists', hash, entry: ocrIndex[hash] }
+      result: { status: 'exists', hash: existingForUrlHash, entry: existingForUrlEntry }
     };
   }
 
   let displayName = initialName;
+  let resourceFormat = resolved.resourceFormat || (type === 'pdf' ? 'pdf' : null);
   if (type === 'pdf') {
     displayName = derivePdfDisplayName({
       url,
@@ -388,6 +489,7 @@ async function prepareJobContext(forceOverwrite, googleExportFormatOverrides = {
       provided,
       contentDisposition
     });
+    resourceFormat = resourceFormat || extensionFromFileName(displayName);
   }
 
   await updateActiveJob({
@@ -397,7 +499,8 @@ async function prepareJobContext(forceOverwrite, googleExportFormatOverrides = {
     displayName: displayName || initialName || 'document',
     existingForUrlHash,
     existingForUrlMatchedUrl,
-    resultHash: hash
+    resultHash: hash,
+    resourceFormat
   });
 
   return {
@@ -416,6 +519,9 @@ async function prepareJobContext(forceOverwrite, googleExportFormatOverrides = {
       displayName: displayName || initialName || 'document',
       type,
       resourceKind: resolved.resourceKind || type,
+      resourceOrigin: resolved.resourceOrigin,
+      resourceProvider: resolved.resourceProvider,
+      resourceFormat,
       contentType,
       hash,
       existingForUrlHash,
@@ -454,18 +560,35 @@ async function startOcrJob({ forceOverwrite = false, googleExportFormatOverrides
       job: await getActiveOcrJob()
     };
   } catch (error) {
-    const reason = isAbortError(error) ? (error?.message || trMsg('ocr_canceled')) : (error?.message || trMsg('error_could_not_start_ocr'));
+    const details = normalizeErrorDetails({
+      error,
+      code: isAbortError(error) ? 'CANCELED' : null,
+      fallbackKey: isAbortError(error) ? 'ocr_canceled' : 'error_could_not_start_ocr'
+    });
     const current = await getActiveOcrJob();
     if (current) {
       await rememberOcrJobNotice({
         level: isAbortError(error) ? 'warning' : 'error',
         title: isAbortError(error) ? trMsg('notification_ocr_canceled_title') : trMsg('notification_ocr_failed_title'),
-        message: reason,
+        message: details.description,
+        code: details.code,
+        description: details.description,
+        category: details.category,
+        httpStatus: details.httpStatus,
+        mistralCode: details.mistralCode,
+        rateLimitHeaders: details.rateLimitHeaders,
         job: current
       });
     }
     await finalizeAndClearJob();
-    throw new Error(reason);
+    const propagatedError = new Error(details.description);
+    propagatedError.code = details.code;
+    propagatedError.description = details.description;
+    propagatedError.category = details.category;
+    propagatedError.status = details.httpStatus;
+    propagatedError.mistralCode = details.mistralCode;
+    propagatedError.rateLimitHeaders = details.rateLimitHeaders;
+    throw propagatedError;
   }
 }
 
@@ -479,7 +602,10 @@ async function persistCompletedOcr({ job, ocr }) {
     ocr,
     hash: job.resultHash,
     includeImages: job.includeImages,
-    resourceKind: job.resourceKind || job.type
+    resourceKind: job.resourceKind || job.type,
+    resourceOrigin: job.resourceOrigin,
+    resourceProvider: job.resourceProvider,
+    resourceFormat: job.resourceFormat || (job.type === 'pdf' ? 'pdf' : null)
   });
 
   let entry;
@@ -491,6 +617,9 @@ async function persistCompletedOcr({ job, ocr }) {
       displayName: job.displayName,
       initialName: job.displayName,
       resourceKind: job.resourceKind,
+      resourceOrigin: job.resourceOrigin,
+      resourceProvider: job.resourceProvider,
+      resourceFormat: job.resourceFormat,
       imagesCount: artifacts.imagesCount,
       pages: artifacts.pages
     });
@@ -513,6 +642,9 @@ async function persistCompletedOcr({ job, ocr }) {
       displayName: job.displayName,
       initialName: job.displayName,
       resourceKind: job.resourceKind,
+      resourceOrigin: job.resourceOrigin,
+      resourceProvider: job.resourceProvider,
+      resourceFormat: job.resourceFormat,
       imagesCount: artifacts.imagesCount,
       pages: artifacts.pages
     });
@@ -537,7 +669,12 @@ async function handleInit() {
     resourceUrl: null,
     resourceName: null,
     resourceKind: null,
+    resourceOrigin: null,
+    resourceProvider: null,
+    resourceFormat: null,
     resourceLabel: null,
+    resourceDisplayLabel: null,
+    resourceIconUrl: null,
     isPdf: false,
     isImage: false,
     isFile: false,
@@ -549,6 +686,8 @@ async function handleInit() {
     resourceState = await buildInitResourceState(tab, await getGoogleExportPrefs());
   }
 
+  const fileAccessState = await getLocalFileAccessState(tab, resourceState);
+
   const exists = resourceState.isOcrable && resourceState.resourceUrl
     ? await checkExistingForUrls(equivalentResourceUrls(resourceState))
     : { found: false };
@@ -556,6 +695,7 @@ async function handleInit() {
   return {
     ok: true,
     ...resourceState,
+    ...fileAccessState,
     exists,
     list,
     activeJob,
@@ -596,17 +736,35 @@ async function handleOffscreenComplete(msg) {
 async function handleOffscreenError(msg) {
   const current = await getActiveOcrJob();
   if (!current || current.id !== msg.jobId) return { ok: true };
-  const reason = localizeMaybe(msg.error, 'error_background_ocr_failed');
+  const details = normalizeErrorDetails({
+    error: msg.error,
+    code: msg.errorCode,
+    description: msg.errorDescription,
+    category: msg.errorCategory,
+    httpStatus: msg.httpStatus,
+    mistralCode: msg.mistralCode,
+    rateLimitHeaders: msg.rateLimitHeaders,
+    fallbackKey: 'error_background_ocr_failed'
+  });
   if (msg.cancelled) {
-    await handleCancelOutcome(reason, false);
+    await handleCancelOutcome(details.description, false);
   } else {
     await rememberOcrJobNotice({
       level: 'error',
       title: trMsg('notification_ocr_failed_title'),
-      message: reason,
+      message: details.description,
+      code: details.code,
+      description: details.description,
+      category: details.category,
+      httpStatus: details.httpStatus,
+      mistralCode: details.mistralCode,
+      rateLimitHeaders: details.rateLimitHeaders,
       job: current
     });
-    await showNotification(trMsg('notification_ocr_failed_title'), reason);
+    await showNotification(
+      trMsg('notification_ocr_failed_title'),
+      `${details.code}: ${details.description}`
+    );
     await finalizeAndClearJob();
   }
   return { ok: true };
@@ -757,19 +915,22 @@ const messageHandlers = {
   LIST: async () => ({ ok: true, list: await listEntries() }),
   LIST_DETAILED: async () => ({ ok: true, list: await listDetailedEntries() }),
   DELETE_ENTRY: async (msg) => deleteEntry(msg.hash),
+  RENAME_TRANSCRIPTION: async (msg) => renameEntry(msg.hash, msg.name),
   GET_MD: async (msg) => getMarkdown(msg.hash),
   GET_PREVIEW_DATA: async (msg) => {
     const data = await getPreviewData(msg.hash);
     return {
       ...data,
-      previewAutoSaveDisabled: await getPreviewAutoSaveDisabledPref()
+      previewAutoSaveDisabled: await getPreviewAutoSaveDisabledPref(),
+      disableClassicLatexRendering: await getDisableClassicLatexRenderingPref()
     };
   },
   SAVE_MARKDOWN: async (msg) => {
     const data = await updateMarkdown(msg.hash, msg.markdown);
     return {
       ...data,
-      previewAutoSaveDisabled: await getPreviewAutoSaveDisabledPref()
+      previewAutoSaveDisabled: await getPreviewAutoSaveDisabledPref(),
+      disableClassicLatexRendering: await getDisableClassicLatexRenderingPref()
     };
   },
   SET_CONFIDENCE_DECISION: async (msg) => updateConfidenceDecision(msg.hash, msg.key, msg.decision),
@@ -784,6 +945,10 @@ const messageHandlers = {
   SET_ACTIVE_API_KEY_SLOT: async (msg) => ({
     ok: true,
     activeApiKeySlot: await setActiveApiKeySlot(msg.value)
+  }),
+  SET_GOOGLE_EXPORT_FORMAT: async (msg) => ({
+    ok: true,
+    format: await setGoogleExportFormatSelection(msg.kind, msg.format)
   }),
   OCR_OFFSCREEN_PROGRESS: async (msg) => handleOffscreenProgress(msg),
   OCR_OFFSCREEN_COMPLETE: async (msg) => handleOffscreenComplete(msg),
@@ -801,7 +966,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
       sendResponse(await handler(msg, sender));
     } catch (error) {
-      sendResponse({ ok: false, error: error?.message || String(error) });
+      const details = normalizeErrorDetails({ error });
+      sendResponse({
+        ok: false,
+        error: details.description,
+        errorCode: details.code,
+        errorDescription: details.description,
+        errorCategory: details.category,
+        httpStatus: details.httpStatus,
+        mistralCode: details.mistralCode,
+        rateLimitHeaders: details.rateLimitHeaders
+      });
     }
   })();
   return true;

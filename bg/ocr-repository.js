@@ -106,7 +106,7 @@ function inferImageMimeFromName(name) {
   return 'image/jpeg';
 }
 
-export async function saveOcrArtifact({ hash, markdown, images, pages, imagesCount, resourceKind, confidenceWords, confidenceDecisions }) {
+export async function saveOcrArtifact({ hash, markdown, images, pages, imagesCount, resourceKind, resourceOrigin, resourceProvider, resourceFormat, confidenceWords, confidenceDecisions }) {
   const record = {
     hash,
     markdown,
@@ -114,6 +114,9 @@ export async function saveOcrArtifact({ hash, markdown, images, pages, imagesCou
     pages,
     imagesCount,
     resourceKind,
+    resourceOrigin,
+    resourceProvider,
+    resourceFormat,
     confidenceWords: Array.isArray(confidenceWords) ? confidenceWords : [],
     confidenceDecisions: confidenceDecisions && typeof confidenceDecisions === 'object' ? confidenceDecisions : {}
   };
@@ -143,7 +146,7 @@ export async function deleteOcrArtifact(hash) {
   });
 }
 
-export async function buildAndSaveOcrArtifacts({ ocr, hash, includeImages, resourceKind }) {
+export async function buildAndSaveOcrArtifacts({ ocr, hash, includeImages, resourceKind, resourceOrigin, resourceProvider, resourceFormat }) {
   let markdown = '';
   const images = [];
   const confidenceWords = [];
@@ -190,6 +193,9 @@ export async function buildAndSaveOcrArtifacts({ ocr, hash, includeImages, resou
     pages: (ocr.pages || []).length,
     imagesCount: includeImages ? images.length : 0,
     resourceKind,
+    resourceOrigin,
+    resourceProvider,
+    resourceFormat,
     confidenceWords,
     confidenceDecisions: {}
   });
@@ -228,7 +234,10 @@ export async function listDetailedEntries() {
       updatedAt: entry.updatedAt,
       pages: entry.pages,
       imagesCount: entry.imagesCount,
-      resourceKind: entry.resourceKind
+      resourceKind: entry.resourceKind,
+      resourceOrigin: entry.resourceOrigin,
+      resourceProvider: entry.resourceProvider,
+      resourceFormat: entry.resourceFormat
     }));
 }
 
@@ -262,6 +271,36 @@ export async function deleteEntry(hash) {
   return { ok: true };
 }
 
+export async function renameEntry(hash, name) {
+  const { ocrIndex, urlToHash } = await getIndex();
+  const entry = ocrIndex[hash];
+  if (!entry) throw new Error(msg('error_ocr_entry_not_found'));
+
+  const normalizedName = String(name ?? '').trim();
+  if (!normalizedName) throw new Error(msg('error_transcription_name_required'));
+  if (Array.from(normalizedName).length > 200) {
+    throw new Error(msg('error_transcription_name_too_long'));
+  }
+
+  const updatedAt = Date.now();
+  ocrIndex[hash] = {
+    ...entry,
+    name: normalizedName,
+    updatedAt
+  };
+  await saveIndex(ocrIndex, urlToHash);
+
+  return {
+    ok: true,
+    entry: {
+      hash,
+      name: normalizedName,
+      createdAt: entry.createdAt,
+      updatedAt
+    }
+  };
+}
+
 export async function getMarkdown(hash) {
   const artifact = await getOcrArtifact(hash);
   if (!artifact.markdown) throw new Error(msg('error_no_stored_content'));
@@ -293,6 +332,9 @@ export async function getPreviewData(hash) {
       pages: artifact.pages ?? entry.pages ?? 0,
       imagesCount: artifact.imagesCount ?? entry.imagesCount ?? images.length,
       resourceKind: artifact.resourceKind || entry.resourceKind || null,
+      resourceOrigin: artifact.resourceOrigin || entry.resourceOrigin || null,
+      resourceProvider: artifact.resourceProvider || entry.resourceProvider || null,
+      resourceFormat: artifact.resourceFormat || entry.resourceFormat || null,
       createdAt: entry.createdAt,
       updatedAt: entry.updatedAt
     }
@@ -313,6 +355,9 @@ export async function updateMarkdown(hash, markdown) {
     pages: artifact.pages ?? entry.pages ?? 0,
     imagesCount: artifact.imagesCount ?? entry.imagesCount ?? 0,
     resourceKind: artifact.resourceKind || entry.resourceKind || null,
+    resourceOrigin: artifact.resourceOrigin || entry.resourceOrigin || null,
+    resourceProvider: artifact.resourceProvider || entry.resourceProvider || null,
+    resourceFormat: artifact.resourceFormat || entry.resourceFormat || null,
     confidenceWords: artifact.confidenceWords || [],
     confidenceDecisions: artifact.confidenceDecisions || {}
   });
@@ -343,6 +388,9 @@ export async function updateConfidenceDecision(hash, key, decision) {
     pages: artifact.pages ?? 0,
     imagesCount: artifact.imagesCount ?? 0,
     resourceKind: artifact.resourceKind || null,
+    resourceOrigin: artifact.resourceOrigin || null,
+    resourceProvider: artifact.resourceProvider || null,
+    resourceFormat: artifact.resourceFormat || null,
     confidenceWords: artifact.confidenceWords || [],
     confidenceDecisions
   });
@@ -370,6 +418,9 @@ export async function updateConfidenceDecisions(hash, keys) {
     pages: artifact.pages ?? 0,
     imagesCount: artifact.imagesCount ?? 0,
     resourceKind: artifact.resourceKind || null,
+    resourceOrigin: artifact.resourceOrigin || null,
+    resourceProvider: artifact.resourceProvider || null,
+    resourceFormat: artifact.resourceFormat || null,
     confidenceWords: artifact.confidenceWords || [],
     confidenceDecisions
   });

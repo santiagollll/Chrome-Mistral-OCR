@@ -24,7 +24,13 @@
     "message": "Set up your Mistral API key"
   },
   "popup_setup_body": {
-    "message": "You need an API key to transcribe documents with OCR."
+    "message": "若要使用此擴充功能，請在您的 Mistral 帳戶中啟用 Pay as you go 並儲值。"
+  },
+  "payg_required_warning": {
+    "message": "⚠️ 如果未啟用 Pay as you go，此擴充功能將無法使用。"
+  },
+  "setup_step_activate_payg": {
+    "message": "請在您的 Mistral 帳戶中啟用 Pay as you go 並儲值。"
   },
   "setup_step_create_key": {
     "message": "Create an API key in Mistral Console."
@@ -41,11 +47,34 @@
   "open_mistral_console": {
     "message": "開啟 Mistral Console"
   },
+  "activate_pay_as_you_go": {
+    "message": "啟用 Pay as you go"
+  },
   "ocr_controls_aria": {
     "message": "OCR controls"
   },
   "current_resource": {
     "message": "目前資源"
+  },
+  "resource_indicator": {
+    "message": "資源：$RESOURCE$",
+    "placeholders": {
+      "resource": {
+        "content": "$1"
+      }
+    }
+  },
+  "resource_pdf": {
+    "message": "PDF"
+  },
+  "resource_google_docs": {
+    "message": "Google 文件"
+  },
+  "resource_google_slides": {
+    "message": "Google 簡報"
+  },
+  "resource_google_sheets": {
+    "message": "Google 試算表"
   },
   "format_for_transcription": {
     "message": "Format to use for this transcription"
@@ -78,10 +107,10 @@
     "message": "設定"
   },
   "options_page_title": {
-    "message": "Options - Mistral OCR"
+    "message": "選項 - Mistral OCR"
   },
   "options_subtitle": {
-    "message": "Manage local credentials, export, and advanced OCR options."
+    "message": "管理本機認證、匯出與進階 OCR 選項。"
   },
   "view_transcriptions": {
     "message": "查看轉錄"
@@ -90,10 +119,19 @@
     "message": "Connect Mistral OCR with your API key"
   },
   "options_setup_body": {
-    "message": "The extension runs locally in Chrome, but OCR uses your Mistral account."
+    "message": "若要使用此擴充功能，請在您的 Mistral 帳戶中啟用 Pay as you go 並儲值。"
   },
   "options_setup_step_open": {
-    "message": "Open Mistral Console and create an API key."
+    "message": "開啟 Mistral Console。"
+  },
+  "options_setup_step_create_account": {
+    "message": "登入或建立 Mistral 帳戶。"
+  },
+  "options_setup_step_activate_payg": {
+    "message": "請在您的 Mistral 帳戶中啟用 Pay as you go 並儲值。"
+  },
+  "options_setup_step_create_key": {
+    "message": "在 Mistral Console 中建立 API key。"
   },
   "options_setup_step_paste": {
     "message": "Paste that key into API key 1."
@@ -105,28 +143,28 @@
     "message": "Open a compatible PDF, document, or image and use Transcribe (OCR) from the popup."
   },
   "api_keys_aria": {
-    "message": "API keys"
+    "message": "API 金鑰"
   },
   "primary_credential": {
-    "message": "Primary credential"
+    "message": "主要認證"
   },
   "optional_credential": {
-    "message": "Optional credential"
+    "message": "選用認證"
   },
   "visible_name": {
-    "message": "Visible name"
+    "message": "顯示名稱"
   },
   "key": {
-    "message": "Key"
+    "message": "金鑰"
   },
   "show": {
-    "message": "Show"
+    "message": "顯示"
   },
   "hide": {
     "message": "Hide"
   },
   "stored_locally_note": {
-    "message": "Stored in this extension's local Chrome storage."
+    "message": "儲存在此擴充功能的 Chrome 本機儲存空間。"
   },
   "api_key_2_help_aria": {
     "message": "View information about API key 2"
@@ -153,13 +191,13 @@
     "message": "If this key is empty, the popup will not show a selector."
   },
   "export": {
-    "message": "Export"
+    "message": "匯出"
   },
   "export_aria": {
     "message": "Export"
   },
   "files_and_images": {
-    "message": "Files and images"
+    "message": "檔案與圖片"
   },
   "image_export": {
     "message": "Image export"
@@ -174,7 +212,7 @@
     "message": "Preview and editing"
   },
   "result_editing": {
-    "message": "Result editing"
+    "message": "編輯結果"
   },
   "disable_preview_autosave": {
     "message": "Disable autosave in preview mode"
@@ -182,14 +220,34 @@
   "disable_preview_autosave_note": {
     "message": "When enabled, Preview/Edit will show the Save changes button."
   },
+  "disable_classic_latex_rendering": {
+    "message": "停用經典 LaTeX 渲染"
+  },
+  "disable_classic_latex_rendering_note": {
+    "message": "啟用後，使用美元分隔符的經典表達式會以文字顯示；現代 LaTeX 仍會繼續渲染。"
+  },
+  "include_pdf_metadata": {
+    "message": "在 PDF 開頭包含文件資訊"
+  },
+  "include_pdf_metadata_note": {
+    "message": "啟用後，PDF 開頭將顯示標題、原始 SHA 和其他文件資訊。"
+  },
+  "original_sha": {
+    "message": "原始 SHA：$SHA$",
+    "placeholders": {
+      "sha": {
+        "content": "$1"
+      }
+    }
+  },
   "experimental": {
-    "message": "Experimental"
+    "message": "實驗性"
   },
   "experimental_options_aria": {
     "message": "Experimental options"
   },
   "extraction_google_workspace": {
-    "message": "Extraction and Google Workspace"
+    "message": "擷取與 Google Workspace"
   },
   "remove_document_header": {
     "message": "Remove document HEADER"
@@ -245,15 +303,6 @@
   "google_native_note": {
     "message": "Each service can export to its Office/CSV format instead of PDF."
   },
-  "google_sheets_format": {
-    "message": "Format for Google Sheets"
-  },
-  "use_xlsx": {
-    "message": "Use .xlsx"
-  },
-  "use_csv": {
-    "message": "Use .csv"
-  },
   "xlsx_help_label": {
     "message": ".xlsx help"
   },
@@ -294,49 +343,61 @@
     "message": "Note: to open local PDFs (file://), enable \"Allow access to file URLs\" for this extension in chrome://extensions."
   },
   "transcriptions_page_title": {
-    "message": "Transcriptions - Mistral OCR"
+    "message": "已儲存的轉錄 - Mistral OCR"
   },
   "local_archive": {
-    "message": "Local archive"
+    "message": "本機封存"
   },
   "transcriptions_subtitle": {
-    "message": "Search by name, URL, SHA, type, or OCR metadata."
+    "message": "依名稱、URL、原始 SHA、類型或 OCR 中繼資料搜尋。"
   },
   "back_to_settings": {
-    "message": "Back to settings"
+    "message": "返回設定"
   },
   "search_transcriptions": {
     "message": "Search transcriptions"
   },
   "search_placeholder": {
-    "message": "Name, URL, SHA, or type"
+    "message": "名稱、URL、原始 SHA 或類型"
   },
   "transcription_list_aria": {
     "message": "Transcription list"
   },
   "preview_page_title": {
-    "message": "Preview/Edit - Mistral OCR"
+    "message": "預覽/編輯 - Mistral OCR"
   },
   "transcription_actions_aria": {
     "message": "Transcription actions"
   },
+  "preview_details": {
+    "message": "詳細資訊"
+  },
+  "show_preview_details": {
+    "message": "顯示預覽詳細資訊"
+  },
+  "hide_preview_details": {
+    "message": "隱藏預覽詳細資訊"
+  },
+  "dismiss_notification": {
+    "message": "關閉通知"
+  },
   "history": {
-    "message": "History"
+    "message": "轉錄"
   },
   "save_changes": {
     "message": "Save changes"
   },
   "copy_markdown": {
-    "message": "Copy markdown"
+    "message": "複製 Markdown"
   },
   "export_markdown": {
-    "message": "Export markdown"
+    "message": "匯出 Markdown"
   },
   "export_pdf": {
-    "message": "Export PDF"
+    "message": "匯出 PDF"
   },
   "export_images": {
-    "message": "Export images"
+    "message": "匯出圖片"
   },
   "rendered": {
     "message": "Rendered"
@@ -352,6 +413,12 @@
   },
   "error_initializing": {
     "message": "Error initializing"
+  },
+  "error_refresh_page_required": {
+    "message": "請重新整理頁面後再試一次。"
+  },
+  "error_invalid_google_export_format": {
+    "message": "Google 匯出格式無效。"
   },
   "api_key_configured": {
     "message": "已設定"
@@ -388,6 +455,24 @@
   },
   "copy_content": {
     "message": "複製內容"
+  },
+  "rename_transcription": {
+    "message": "重新命名"
+  },
+  "rename_name_placeholder": {
+    "message": "轉錄名稱"
+  },
+  "rename_saved": {
+    "message": "轉錄名稱已更新。"
+  },
+  "could_not_rename": {
+    "message": "無法重新命名轉錄。"
+  },
+  "error_transcription_name_required": {
+    "message": "名稱不能為空。"
+  },
+  "error_transcription_name_too_long": {
+    "message": "名稱不能超過 200 個字元。"
   },
   "showing_recent_transcriptions": {
     "message": "Showing $COUNT$ of $TOTAL$ recent transcriptions. Open \"View all\" to search, export, or delete.",
@@ -431,6 +516,14 @@
       }
     }
   },
+  "ocr_exists_for_document_format": {
+    "message": "已存在一份使用 $FORMAT$ 匯出格式的 OCR 轉錄。",
+    "placeholders": {
+      "format": {
+        "content": "$1"
+      }
+    }
+  },
   "no_previous_ocr_for_document": {
     "message": "No previous OCR for this document."
   },
@@ -446,6 +539,19 @@
   "starting_ocr_background": {
     "message": "Starting background OCR..."
   },
+  "ocr_access_help_title": { "message": "OCR 無法完成" },
+  "ocr_access_help_body": { "message": "可能是因為尚未啟用 Pay as you go、餘額不足，或已達到使用限制。" },
+  "ocr_access_reason_no_active_usage_limit": { "message": "此 API key 可能尚未啟用 Pay as you go。" },
+  "ocr_access_reason_rate_limit_reached": { "message": "可能已達到 Mistral 的使用限制。" },
+  "ocr_access_reason_payment_required": { "message": "可能需要檢查餘額或付款設定。" },
+  "ocr_access_status_no_active_usage_limit": { "message": "可能需要啟用 Pay as you go 或有效使用權限。" },
+  "ocr_access_status_rate_limit_reached": { "message": "可能已達到使用限制。" },
+  "ocr_access_status_payment_required": { "message": "可能需要付款或儲值。" },
+  "ocr_access_activate_payg": { "message": "啟用 Pay as you go" },
+  "ocr_access_details": { "message": "技術詳細資訊" },
+  "ocr_http_status_label": { "message": "HTTP 狀態" },
+  "ocr_mistral_code_label": { "message": "Mistral 程式碼" },
+  "ocr_description_label": { "message": "說明" },
   "error_in_ocr": {
     "message": "OCR error"
   },
@@ -617,7 +723,7 @@
     "message": "圖片"
   },
   "resource_image_ext": {
-    "message": "Image $EXT$",
+    "message": "圖片 $EXT$",
     "placeholders": {
       "ext": {
         "content": "$1"
@@ -626,6 +732,9 @@
   },
   "resource_document": {
     "message": "文件"
+  },
+  "non_google_source": {
+    "message": "非 Google 文件"
   },
   "resource_document_ext": {
     "message": "Document $EXT$",
@@ -878,5 +987,86 @@
   },
   "ocr_in_progress": {
     "message": "OCR 進行中"
+  },
+  "file_url_access_warning_title": {
+    "message": "本機檔案存取權限已關閉"
+  },
+  "file_url_access_warning_body": {
+    "message": "若要轉錄此本機檔案，請允許擴充功能存取檔案 URL。"
+  },
+  "file_url_access_warning_aria": {
+    "message": "本機檔案存取警告"
+  },
+  "file_url_access_step_open": {
+    "message": "開啟擴充功能詳細資料頁面。"
+  },
+  "file_url_access_step_toggle": {
+    "message": "啟用「允許存取檔案 URL」。"
+  },
+  "file_url_access_step_reopen": {
+    "message": "重新開啟此彈出視窗，然後再試一次。"
+  },
+  "file_url_access_open_settings": {
+    "message": "開啟擴充功能設定"
+  },
+  "error_file_url_access_required": {
+    "message": "請先在擴充功能設定中允許存取檔案 URL，再轉錄此本機檔案。"
+  },
+  "error_open_extension_settings": {
+    "message": "無法開啟擴充功能設定。"
+  },
+  "ocr_exists_generic": {
+    "message": "已有先前的 OCR 轉錄。"
+  },
+  "api_key_1_label": {
+    "message": "API 金鑰 1"
+  },
+  "api_key_2_label": {
+    "message": "API 金鑰 2"
+  },
+  "personalization": {
+    "message": "個人化"
+  },
+  "extension_icon": {
+    "message": "擴充功能圖示"
+  },
+  "custom_icon_description": {
+    "message": "使用 PNG URL 取代此瀏覽器中的擴充功能工具列圖示。"
+  },
+  "png_icon_url": {
+    "message": "PNG 圖示 URL"
+  },
+  "example": {
+    "message": "範例："
+  },
+  "official_mistral_logo_png": {
+    "message": "Mistral 官方 PNG 標誌"
+  },
+  "custom_icon_direct_png_note": {
+    "message": "僅支援直接的 HTTPS PNG 圖片 URL。圖示會調整大小並儲存在此瀏覽器本機。"
+  },
+  "apply_custom_icon": {
+    "message": "套用自訂圖示"
+  },
+  "reset_custom_icon": {
+    "message": "還原預設圖示"
+  },
+  "preview_edit": {
+    "message": "預覽/編輯"
+  },
+  "original_sha_label": {
+    "message": "SHA"
+  },
+ "custom_icon_section_aria": {
+    "message": "圖示設定"
+  },
+  "ocr_error_details": {
+    "message": "OCR 錯誤詳細資訊"
+  },
+  "error_code_label": {
+    "message": "錯誤代碼"
+  },
+  "error_description_label": {
+    "message": "說明"
   }
 }

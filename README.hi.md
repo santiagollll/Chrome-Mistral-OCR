@@ -1,5 +1,9 @@
 # Chrome Mistral OCR
 
+<p align="center">
+  <img src="assets/banner.png" alt="Mistral OCR" width="100%">
+</p>
+
 Mistral OCR के साथ दस्तावेज़ों और छवियों को ट्रांसक्राइब करने के लिए Chrome एक्सटेंशन। यह एक्सटेंशन के popup से चलता है, परिणामों को लोकल रूप से सहेजता है, और preview, edit, copy, Markdown export, image export और rendered preview से PDF output की सुविधा देता है।
 
 ## गोपनीयता
@@ -28,6 +32,8 @@ Mistral AI की शर्तें: https://mistral.ai/terms
 
 ## पहली बार उपयोग
 
+> ⚠️ यदि Pay as you go सक्रिय नहीं है, तो यह एक्सटेंशन काम नहीं करेगा। इसे सक्रिय करें और [Mistral billing](https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO) से बैलेंस जोड़ें।
+
 1. Mistral Console में API key बनाएँ: https://console.mistral.ai/
 2. एक्सटेंशन खोलें और `Configure` पर क्लिक करें।
 3. key को `API key 1` में पेस्ट करें।
@@ -52,7 +58,7 @@ Google Docs, Google Slides और Google Sheets डिफ़ॉल्ट रू�
 
 ## समस्या निवारण
 
-यदि OCR शुरू नहीं होता, तो जाँचें कि API key saved है और active tab में compatible resource है। यदि background OCR job पहले से चल रही है, तो उसके खत्म होने की प्रतीक्षा करें या उसे cancel करें।
+यदि OCR शुरू नहीं होता, तो जाँचें कि Pay as you go सक्रिय है और बैलेंस उपलब्ध है, API key saved है और active tab में compatible resource है। यदि background OCR job पहले से चल रही है, तो उसके खत्म होने की प्रतीक्षा करें या उसे cancel करें।
 
 यदि local files काम नहीं करतीं, तो `chrome://extensions` खोलें, इस extension की details खोलें, और `Allow access to file URLs` सक्षम करें।
 

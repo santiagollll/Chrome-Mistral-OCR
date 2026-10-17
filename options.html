@@ -6,38 +6,70 @@
     <link rel="stylesheet" href="styles/mistral-ui.css">
   </head>
   <body class="options-page">
-    <main class="app-shell options-grid">
-      <header class="app-header">
-        <div>
+    <header class="page-topbar">
+      <div class="page-toolbar options-toolbar">
+        <div class="page-heading">
           <div class="eyebrow" data-i18n="settings">Configuración</div>
           <h1>Mistral OCR</h1>
-          <p data-i18n="options_subtitle">Administra credenciales locales, exportación y opciones avanzadas de OCR.</p>
         </div>
-        <a id="openTranscriptions" class="button subtle" href="transcriptions.html" data-i18n="view_transcriptions">Ver transcripciones</a>
-      </header>
+        <div class="page-toolbar-actions">
+          <a id="openTranscriptions" class="button subtle compact-tool" href="transcriptions.html" data-i18n-title="view_transcriptions" data-i18n-aria-label="view_transcriptions">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+            <span class="page-action-label" data-i18n="view_transcriptions">Ver transcripciones</span>
+          </a>
+          <button id="save" class="primary compact-tool" type="button" data-i18n-title="save" data-i18n-aria-label="save">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>
+            <span class="page-action-label" data-i18n="save">Guardar</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-shell options-shell">
+      <p class="options-intro" data-i18n="options_subtitle">Administra credenciales locales, exportación y opciones avanzadas de OCR.</p>
 
       <section id="setupGuide" class="card setup-guide hidden" aria-label="Guía de primer uso" data-i18n-aria-label="setup_guide_aria">
         <div>
           <div class="eyebrow" data-i18n="first_use">Primer uso</div>
           <h2 data-i18n="options_setup_title">Conecta Mistral OCR con tu API key</h2>
-          <p data-i18n="options_setup_body">La extensión funciona localmente en Chrome, pero el OCR se ejecuta usando tu cuenta de Mistral.</p>
+          <p data-i18n="options_setup_body">To use this extension, activate Pay as you go in your Mistral account and add balance.</p>
+          <p class="setup-warning" data-i18n="payg_required_warning">⚠️ If Pay as you go is not active, this extension will not work.</p>
         </div>
         <ol>
-          <li data-i18n="options_setup_step_open">Abre Mistral Console y crea una API key.</li>
+          <li data-i18n="options_setup_step_open">Open Mistral Console.</li>
+          <li data-i18n="options_setup_step_create_account">Sign in or create a Mistral account.</li>
+          <li data-i18n="options_setup_step_activate_payg">Activate Pay as you go and add balance in your Mistral account.</li>
+          <li data-i18n="options_setup_step_create_key">Create an API key in Mistral Console.</li>
           <li data-i18n="options_setup_step_paste">Pega esa clave en API key 1.</li>
           <li data-i18n="options_setup_step_save">Haz click en Guardar.</li>
           <li data-i18n="options_setup_step_run">Abre un PDF, documento o imagen compatible y usa Transcribir (OCR) desde el popup.</li>
         </ol>
         <div class="actions">
           <a class="button primary" href="https://console.mistral.ai/" target="_blank" rel="noopener noreferrer" data-i18n="open_mistral_console">Abrir Mistral Console</a>
+          <a class="button subtle" href="https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO" target="_blank" rel="noopener noreferrer" data-i18n="activate_pay_as_you_go">Activate Pay as you go</a>
         </div>
       </section>
 
-      <section class="settings-grid" aria-label="API keys" data-i18n-aria-label="api_keys_aria">
-        <article class="card stack">
+      <div class="settings-sections">
+        <details class="settings-section" open>
+          <summary>
+            <span class="settings-section-heading">
+              <span class="settings-section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 8-8M15 8l2 2M13 10l2 2"/></svg>
+              </span>
+              <span>
+                <span class="eyebrow" data-i18n="settings">Configuración</span>
+                <span class="settings-section-title" data-i18n="api_keys_aria">API keys</span>
+              </span>
+            </span>
+            <span class="settings-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-section-content">
+            <section class="settings-grid credentials-grid" aria-label="API keys" data-i18n-aria-label="api_keys_aria">
+        <article class="settings-subsection stack">
           <div>
             <div class="eyebrow" data-i18n="primary_credential">Credencial principal</div>
-            <h2>API key 1</h2>
+            <h2 data-i18n="api_key_1_label">API key 1</h2>
           </div>
           <div class="field-group">
             <label for="apiKey1Label" data-i18n="visible_name">Nombre visible</label>
@@ -46,18 +78,18 @@
           <div class="field-group">
             <label for="apiKey1" data-i18n="key">Clave</label>
             <div class="field-row">
-              <input type="password" id="apiKey1" placeholder="TuAp1KeyDeM1stralSegurAA..." autocomplete="off">
+              <input type="password" id="apiKey1" placeholder="YourMistralApiKeyGoesHere..." autocomplete="off">
               <button id="toggleVisibility1" type="button" data-i18n="show">Mostrar</button>
             </div>
           </div>
           <div class="small" data-i18n="stored_locally_note">Se guarda en el almacenamiento local de Chrome de esta extensión.</div>
         </article>
 
-        <article class="card stack">
+        <article class="settings-subsection stack">
           <div>
             <div class="eyebrow" data-i18n="optional_credential">Credencial opcional</div>
             <div class="section-title">
-              <h2>API key 2</h2>
+              <h2 data-i18n="api_key_2_label">API key 2</h2>
               <button class="help-btn" type="button" data-help-toggle="helpApiKey2" aria-expanded="false" aria-label="Ver información sobre API KEY 2" data-i18n-aria-label="api_key_2_help_aria">?</button>
             </div>
           </div>
@@ -83,9 +115,25 @@
           </div>
           <div class="small" data-i18n="secondary_empty_note">Si esta clave está vacía, el popup no mostrará selector.</div>
         </article>
-      </section>
+            </section>
+          </div>
+        </details>
 
-      <section class="card stack" aria-label="Exportación" data-i18n-aria-label="export_aria">
+        <details class="settings-section">
+          <summary>
+            <span class="settings-section-heading">
+              <span class="settings-section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>
+              </span>
+              <span>
+                <span class="eyebrow" data-i18n="export">Exportación</span>
+                <span class="settings-section-title" data-i18n="files_and_images">Archivos e imágenes</span>
+              </span>
+            </span>
+            <span class="settings-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-section-content settings-section-grid">
+      <section class="settings-subsection stack" aria-label="Exportación" data-i18n-aria-label="export_aria">
         <div>
           <div class="eyebrow" data-i18n="export">Exportación</div>
           <h2 data-i18n="files_and_images">Archivos e imágenes</h2>
@@ -99,14 +147,14 @@
         </div>
       </section>
 
-      <section class="card stack" aria-label="Custom icon">
+      <section class="settings-subsection stack" aria-label="Custom icon" data-i18n-aria-label="custom_icon_section_aria">
         <div>
-          <div class="eyebrow">Personalization</div>
-          <h2>Extension icon</h2>
-          <p class="small">Use a PNG URL to replace the toolbar icon of the extension in this browser.</p>
+          <div class="eyebrow" data-i18n="personalization">Personalization</div>
+          <h2 data-i18n="extension_icon">Extension icon</h2>
+          <p class="small" data-i18n="custom_icon_description">Use a PNG URL to replace the toolbar icon of the extension in this browser.</p>
         </div>
         <div class="field-group">
-          <label for="customIconUrl">PNG icon URL</label>
+          <label for="customIconUrl" data-i18n="png_icon_url">PNG icon URL</label>
           <input
             type="url"
             id="customIconUrl"
@@ -115,22 +163,38 @@
             autocomplete="off">
         </div>
         <div class="small">
-          Example:
+          <span data-i18n="example">Example:</span>
           <a
             href="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Mistral_AI_logo_%282025%E2%80%93%29.svg/960px-Mistral_AI_logo_%282025%E2%80%93%29.svg.png"
             target="_blank"
-            rel="noopener noreferrer">Official Mistral logo PNG</a>
+            rel="noopener noreferrer" data-i18n="official_mistral_logo_png">Official Mistral logo PNG</a>
         </div>
-        <div class="small">Only direct HTTPS PNG URLs are supported. The icon is resized and stored locally in this browser.</div>
+        <div class="small" data-i18n="custom_icon_direct_png_note">Only direct HTTPS PNG URLs are supported. The icon is resized and stored locally in this browser.</div>
         <div class="actions">
-          <button id="applyCustomIcon" type="button">Apply custom icon</button>
-          <button id="resetCustomIcon" class="subtle" type="button">Reset default icon</button>
+          <button id="applyCustomIcon" type="button" data-i18n="apply_custom_icon">Apply custom icon</button>
+          <button id="resetCustomIcon" class="subtle" type="button" data-i18n="reset_custom_icon">Reset default icon</button>
         </div>
       </section>
+          </div>
+        </details>
 
-      <section class="card stack" aria-label="Preview y edición" data-i18n-aria-label="preview_edit_aria">
+        <details class="settings-section">
+          <summary>
+            <span class="settings-section-heading">
+              <span class="settings-section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3z"/><path d="M8 5v14M12 9h5M12 13h5"/></svg>
+              </span>
+              <span>
+                <span class="eyebrow" data-i18n="preview_edit">Preview/Edit</span>
+                <span class="settings-section-title" data-i18n="result_editing">Edición de resultados</span>
+              </span>
+            </span>
+            <span class="settings-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-section-content settings-choice-list">
+      <section class="settings-subsection stack" aria-label="Preview y edición" data-i18n-aria-label="preview_edit_aria">
         <div>
-          <div class="eyebrow">Preview/Edit</div>
+          <div class="eyebrow" data-i18n="preview_edit">Preview/Edit</div>
           <h2 data-i18n="result_editing">Edición de resultados</h2>
         </div>
         <label class="toggle-row">
@@ -140,9 +204,39 @@
             <span class="small" data-i18n="disable_preview_autosave_note">Si está activado, Preview/Edit mostrará el botón Guardar cambios.</span>
           </span>
         </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="disableClassicLatexRendering">
+          <span>
+            <span data-i18n="disable_classic_latex_rendering">Desactivar renderizado de LaTeX clásico</span>
+            <span class="small" data-i18n="disable_classic_latex_rendering_note">Si está activado, las expresiones $...$ y $$...$$ se mostrarán como texto; el LaTeX moderno seguirá renderizándose.</span>
+          </span>
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="includePdfMetadata">
+          <span>
+            <span data-i18n="include_pdf_metadata">Incluir información del documento al inicio del PDF</span>
+            <span class="small" data-i18n="include_pdf_metadata_note">Al activarlo, el PDF incluirá al inicio el título, el SHA original y otros datos del documento.</span>
+          </span>
+        </label>
       </section>
+          </div>
+        </details>
 
-      <section class="card stack" aria-label="Opciones experimentales" data-i18n-aria-label="experimental_options_aria">
+        <details class="settings-section">
+          <summary>
+            <span class="settings-section-heading">
+              <span class="settings-section-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v5l-5 9a2.7 2.7 0 0 0 2.4 4h9.2a2.7 2.7 0 0 0 2.4-4l-5-9V3"/><path d="M7.5 16h9"/></svg>
+              </span>
+              <span>
+                <span class="eyebrow" data-i18n="experimental">Experimental</span>
+                <span class="settings-section-title" data-i18n="extraction_google_workspace">Extracción y Google Workspace</span>
+              </span>
+            </span>
+            <span class="settings-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="settings-section-content settings-choice-list">
+      <section class="settings-subsection stack" aria-label="Opciones experimentales" data-i18n-aria-label="experimental_options_aria">
         <div>
           <div class="eyebrow" data-i18n="experimental">Experimental</div>
           <h2 data-i18n="extraction_google_workspace">Extracción y Google Workspace</h2>
@@ -198,13 +292,6 @@
         <div class="small" data-i18n="google_native_note">Cada servicio puede exportarse en su formato Office/CSV correspondiente en vez de PDF.</div>
 
         <div class="indent stack">
-          <div class="field-group">
-            <label for="googleSheetsExportFormat" data-i18n="google_sheets_format">Formato para Google Sheets</label>
-            <select id="googleSheetsExportFormat">
-              <option value="xlsx" data-i18n="use_xlsx">Usar .xlsx</option>
-              <option value="csv" data-i18n="use_csv">Usar .csv</option>
-            </select>
-          </div>
           <div class="row">
             <span class="inline">
               <span data-i18n="xlsx_help_label">Ayuda .xlsx</span>
@@ -232,16 +319,16 @@
           </div>
         </div>
       </section>
+          </div>
+        </details>
+      </div>
 
-      <section class="row between">
-        <button id="save" class="primary" type="button" data-i18n="save">Guardar</button>
-        <div id="msg" class="small message" aria-live="polite"></div>
-      </section>
-
-      <p class="small">
-        <span data-i18n="file_access_note">Nota: si vas a abrir PDFs locales (file://), en chrome://extensions habilita “Permitir el acceso a URLs de archivos” para esta extensión.</span>
-      </p>
     </main>
+
+    <div id="msg" class="app-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <span id="msgText"></span>
+      <button id="msgDismiss" class="app-toast-dismiss" type="button" hidden data-i18n-title="dismiss_notification" data-i18n-aria-label="dismiss_notification">×</button>
+    </div>
 
     <script src="i18n.js"></script>
     <script src="options.js"></script>

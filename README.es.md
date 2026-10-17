@@ -1,5 +1,9 @@
 # Chrome Mistral OCR
 
+<p align="center">
+  <img src="assets/banner.png" alt="Mistral OCR" width="100%">
+</p>
+
 Extensión de Chrome para transcribir documentos e imágenes con Mistral OCR. Funciona desde el popup de la extensión, guarda los resultados localmente y permite previsualizar, editar, copiar, exportar Markdown, exportar imágenes y generar salida PDF desde la vista renderizada.
 
 ## Privacidad
@@ -28,6 +32,8 @@ Notas importantes:
 
 ## Primer uso
 
+> ⚠️ Si Pay as you go no está activado, esta extensión no funcionará. Actívalo y añade saldo desde [la sección de facturación de Mistral](https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO).
+
 1. Crea una API key en Mistral Console: https://console.mistral.ai/
 2. Abre la extensión y haz clic en `Configurar`.
 3. Pega la clave en `API key 1`.
@@ -52,7 +58,7 @@ Adicionalmente, la extensión puede funcionar con cualquier imagen que Chrome re
 
 ## Solución de problemas
 
-Si el OCR no inicia, verifica que haya una API key guardada y que la pestaña activa contenga un recurso compatible. Si ya hay un OCR en segundo plano en curso, espera a que termine o cancélalo.
+Si el OCR no inicia, verifica que Pay as you go esté activado y tenga saldo disponible, que haya una API key guardada y que la pestaña activa contenga un recurso compatible. Si ya hay un OCR en segundo plano en curso, espera a que termine o cancélalo.
 
 Si los archivos locales no funcionan, abre `chrome://extensions`, entra a los detalles de esta extensión y activa `Permitir el acceso a URLs de archivos`.
 

@@ -43,6 +43,14 @@ const SUPPORTED_FILE_EXTENSIONS = new Set([
   'man'
 ]);
 
+function assetUrl(filename) {
+  try {
+    return chrome.runtime.getURL(`assets/${filename}`);
+  } catch {
+    return `assets/${filename}`;
+  }
+}
+
 function extensionFromPath(pathname) {
   const last = (pathname || '').split('/').pop() || '';
   const match = last.match(/\.([A-Za-z0-9]+)$/);
@@ -119,24 +127,35 @@ export function extractResourceUrlAndNameFromUrl(anyUrl) {
     const ext = extensionFromPath(pathname);
     let type = null;
     let resourceKind = null;
+    let resourceFormat = null;
     let resourceLabel = null;
     if (pathname.endsWith('.pdf') || pathname.includes('/viewer/secure/pdf')) {
       type = 'pdf';
       resourceKind = 'pdf';
+      resourceFormat = 'pdf';
       resourceLabel = 'PDF';
     } else if (SUPPORTED_IMAGE_EXTENSIONS.has(ext)) {
       type = 'image';
       resourceKind = `image-${ext || 'unknown'}`;
+      resourceFormat = ext || 'image';
       resourceLabel = labelForExtension(ext, 'image');
     } else if (SUPPORTED_FILE_EXTENSIONS.has(ext)) {
       type = 'file';
       resourceKind = ext || 'file';
+      resourceFormat = ext || null;
       resourceLabel = labelForExtension(ext, 'file');
     }
     const resourceName = nameGuess || (type === 'pdf' ? 'document.pdf' : type === 'image' ? `image.${ext || 'jpeg'}` : 'document');
-    return { resourceUrl: parsed.href, resourceName, type, resourceKind, resourceLabel };
+    return { resourceUrl: parsed.href, resourceName, type, resourceKind, resourceFormat, resourceLabel };
   } catch {
-    return { resourceUrl: anyUrl || '', resourceName: 'document', type: null, resourceKind: null, resourceLabel: null };
+    return {
+      resourceUrl: anyUrl || '',
+      resourceName: 'document',
+      type: null,
+      resourceKind: null,
+      resourceFormat: null,
+      resourceLabel: null
+    };
   }
 }
 
@@ -201,12 +220,8 @@ async function fetchGooglePdfViaCS(tabId, messageType, errorMessage) {
   return { ab: base64ToArrayBuffer(res.pdfB64), name: res.name };
 }
 
-function normalizeGoogleSheetsExportFormat(value) {
-  return value === 'csv' ? 'csv' : 'xlsx';
-}
-
 export function getGoogleExportFormat(kind, prefs = {}) {
-  const override = prefs.googleExportFormatOverrides?.[kind];
+  const override = prefs.googleExportFormatOverrides?.[kind] || prefs.googleExportFormatSelections?.[kind];
   if (kind === 'google-doc') {
     if (override === 'docx' && prefs.googleDocsDocxEnabled) return 'docx';
     if (override === 'pdf') return 'pdf';
@@ -220,7 +235,7 @@ export function getGoogleExportFormat(kind, prefs = {}) {
   if (kind === 'google-sheets') {
     if ((override === 'xlsx' || override === 'csv') && prefs.googleSheetsNativeEnabled) return override;
     if (override === 'pdf') return 'pdf';
-    return prefs.googleSheetsNativeEnabled ? normalizeGoogleSheetsExportFormat(prefs.googleSheetsExportFormat) : 'pdf';
+    return prefs.googleSheetsNativeEnabled ? 'xlsx' : 'pdf';
   }
   return 'pdf';
 }
@@ -251,6 +266,13 @@ function googleResourceLabel(providerLabel, format) {
   return format === 'pdf' ? `${providerLabel} PDF` : `${providerLabel} ${format.toUpperCase()}`;
 }
 
+function googleResourceDisplayLabel(kind) {
+  if (kind === 'google-doc') return msg('resource_google_docs');
+  if (kind === 'google-slides') return msg('resource_google_slides');
+  if (kind === 'google-sheets') return msg('resource_google_sheets');
+  return null;
+}
+
 function googleResourceUrl(baseUrl, format) {
   if (!baseUrl) return null;
   try {
@@ -273,7 +295,7 @@ async function fetchGoogleFileViaCS(tabId, kind, format, errorMessage) {
 export const GOOGLE_PROVIDERS = [
   {
     kind: 'google-doc',
-    label: 'Google Doc',
+    label: 'Google Docs',
     isUrl: isGoogleDocUrl,
     baseUrl: googleDocBaseUrl,
     fetchFile: (tabId, format) => fetchGoogleFileViaCS(tabId, 'doc', format, msg('error_export_file_google_docs')),
@@ -312,7 +334,12 @@ export async function buildInitResourceState(tab, googleExportPrefs = {}) {
       resourceUrl: googleResourceUrl(baseUrl, format) || baseUrl,
       resourceName: googleResourceName(format),
       resourceKind: googleProvider.kind,
+      resourceOrigin: 'google',
+      resourceProvider: googleProvider.kind,
+      resourceFormat: format,
       resourceLabel: googleResourceLabel(googleProvider.label, format),
+      resourceDisplayLabel: googleResourceDisplayLabel(googleProvider.kind),
+      resourceIconUrl: tab.favIconUrl || null,
       isPdf: type === 'pdf',
       isImage: false,
       isFile: type === 'file',
@@ -324,6 +351,8 @@ export async function buildInitResourceState(tab, googleExportPrefs = {}) {
         resourceUrl: googleResourceUrl(baseUrl, option.value) || baseUrl,
         resourceName: googleResourceName(option.value),
         resourceLabel: googleResourceLabel(googleProvider.label, option.value),
+        resourceDisplayLabel: googleResourceDisplayLabel(googleProvider.kind),
+        resourceIconUrl: tab.favIconUrl || null,
         isPdf: googleResourceType(option.value) === 'pdf',
         isFile: googleResourceType(option.value) === 'file'
       })),
@@ -346,7 +375,10 @@ export async function buildInitResourceState(tab, googleExportPrefs = {}) {
   let isOcrable = isPdf || isImage || isFile;
   let embeddedPdfUrl = null;
   let resourceKind = direct.resourceKind || (isPdf ? 'pdf' : isImage ? 'image' : isFile ? 'file' : null);
+  let resourceFormat = direct.resourceFormat || (isPdf ? 'pdf' : null);
   let resourceLabel = direct.resourceLabel || (isPdf ? 'PDF' : isImage ? msg('resource_image') : isFile ? msg('resource_document') : null);
+  let resourceDisplayLabel = resourceLabel;
+  let resourceIconUrl = isPdf ? assetUrl('pdf.png') : isImage ? assetUrl('img.png') : null;
 
   if (!isOcrable && tab?.id) {
     embeddedPdfUrl = await findEmbeddedPdfUrl(tab);
@@ -360,7 +392,10 @@ export async function buildInitResourceState(tab, googleExportPrefs = {}) {
         isFile = false;
         isOcrable = true;
         resourceKind = 'embedded-pdf';
+        resourceFormat = 'pdf';
         resourceLabel = msg('resource_embedded_pdf');
+        resourceDisplayLabel = msg('resource_pdf');
+        resourceIconUrl = assetUrl('pdf.png');
       } else {
         embeddedPdfUrl = null;
       }
@@ -371,7 +406,12 @@ export async function buildInitResourceState(tab, googleExportPrefs = {}) {
     resourceUrl,
     resourceName,
     resourceKind,
+    resourceOrigin: 'non-google',
+    resourceProvider: null,
+    resourceFormat,
     resourceLabel,
+    resourceDisplayLabel,
+    resourceIconUrl,
     isPdf,
     isImage,
     isFile,
@@ -392,6 +432,9 @@ export async function resolveResourceForTab(tab, googleExportPrefs = {}) {
         name: info.type === 'pdf' ? info.resourceName || 'document.pdf' : 'document.pdf',
         type: 'pdf',
         resourceKind: 'pdf',
+        resourceOrigin: 'non-google',
+        resourceProvider: null,
+        resourceFormat: 'pdf',
         tab,
         provided: false
       };
@@ -411,7 +454,12 @@ export async function resolveResourceForTab(tab, googleExportPrefs = {}) {
       name: name || googleResourceName(format),
       type,
       resourceKind: googleProvider.kind,
+      resourceOrigin: 'google',
+      resourceProvider: googleProvider.kind,
+      resourceFormat: format,
       resourceLabel: googleResourceLabel(googleProvider.label, format),
+      resourceDisplayLabel: googleResourceDisplayLabel(googleProvider.kind),
+      resourceIconUrl: tab.favIconUrl || null,
       tab,
       ab,
       provided: true
@@ -426,6 +474,9 @@ export async function resolveResourceForTab(tab, googleExportPrefs = {}) {
     name: initState.resourceName,
     type: initState.isImage ? 'image' : initState.isPdf ? 'pdf' : 'file',
     resourceKind: initState.resourceKind,
+    resourceOrigin: initState.resourceOrigin,
+    resourceProvider: initState.resourceProvider,
+    resourceFormat: initState.resourceFormat,
     resourceLabel: initState.resourceLabel,
     tab,
     provided: false

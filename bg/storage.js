@@ -127,21 +127,40 @@ export async function getGoogleExportPrefs() {
     googleSlidesPptxEnabled,
     googleSheetsNativeEnabled,
     googleNativeExportsEnabled,
-    googleSheetsExportFormat
+    googleExportFormatSelections
   } = await storage.get([
     'googleDocsDocxEnabled',
     'googleSlidesPptxEnabled',
     'googleSheetsNativeEnabled',
     'googleNativeExportsEnabled',
-    'googleSheetsExportFormat'
+    'googleExportFormatSelections'
   ]);
   const legacyGoogleNativeEnabled = googleNativeExportsEnabled === true;
   return {
     googleDocsDocxEnabled: googleDocsDocxEnabled === true || (googleDocsDocxEnabled == null && legacyGoogleNativeEnabled),
     googleSlidesPptxEnabled: googleSlidesPptxEnabled === true || (googleSlidesPptxEnabled == null && legacyGoogleNativeEnabled),
     googleSheetsNativeEnabled: googleSheetsNativeEnabled === true || (googleSheetsNativeEnabled == null && legacyGoogleNativeEnabled),
-    googleSheetsExportFormat: googleSheetsExportFormat === 'csv' ? 'csv' : 'xlsx'
+    googleExportFormatSelections: googleExportFormatSelections && typeof googleExportFormatSelections === 'object'
+      ? googleExportFormatSelections
+      : {}
   };
+}
+
+export async function setGoogleExportFormatSelection(kind, format) {
+  const allowed = {
+    'google-doc': new Set(['pdf', 'docx']),
+    'google-slides': new Set(['pdf', 'pptx']),
+    'google-sheets': new Set(['pdf', 'xlsx', 'csv'])
+  };
+  if (!allowed[kind]?.has(format)) throw new Error(msg('error_invalid_google_export_format'));
+
+  const { googleExportFormatSelections } = await storage.get(['googleExportFormatSelections']);
+  const next = googleExportFormatSelections && typeof googleExportFormatSelections === 'object'
+    ? { ...googleExportFormatSelections }
+    : {};
+  next[kind] = format;
+  await storage.set({ googleExportFormatSelections: next });
+  return format;
 }
 
 export async function getIndex() {
@@ -174,6 +193,11 @@ export async function setImageExportModePref(value) {
 export async function getPreviewAutoSaveDisabledPref() {
   const { previewAutoSaveDisabled } = await storage.get(['previewAutoSaveDisabled']);
   return previewAutoSaveDisabled === true;
+}
+
+export async function getDisableClassicLatexRenderingPref() {
+  const { disableClassicLatexRendering } = await storage.get(['disableClassicLatexRendering']);
+  return disableClassicLatexRendering === true;
 }
 
 export async function getActiveOcrJob() {

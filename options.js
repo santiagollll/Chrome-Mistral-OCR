@@ -9,30 +9,54 @@ const toggleVisibility1Btn = document.getElementById('toggleVisibility1');
 const toggleVisibility2Btn = document.getElementById('toggleVisibility2');
 const imageExportModeEl = document.getElementById('imageExportMode');
 const previewAutoSaveDisabledEl = document.getElementById('previewAutoSaveDisabled');
+const disableClassicLatexRenderingEl = document.getElementById('disableClassicLatexRendering');
+const includePdfMetadataEl = document.getElementById('includePdfMetadata');
 const removeDocumentHeaderEl = document.getElementById('removeDocumentHeader');
 const removeDocumentFooterEl = document.getElementById('removeDocumentFooter');
 const googleDocsDocxEnabledEl = document.getElementById('googleDocsDocxEnabled');
 const googleSlidesPptxEnabledEl = document.getElementById('googleSlidesPptxEnabled');
 const googleSheetsNativeEnabledEl = document.getElementById('googleSheetsNativeEnabled');
-const googleSheetsExportFormatEl = document.getElementById('googleSheetsExportFormat');
 const customIconUrlEl = document.getElementById('customIconUrl');
 const applyCustomIconBtn = document.getElementById('applyCustomIcon');
 const resetCustomIconBtn = document.getElementById('resetCustomIcon');
 const msgEl = document.getElementById('msg');
+const msgTextEl = document.getElementById('msgText');
+const msgDismissBtn = document.getElementById('msgDismiss');
 const setupGuideEl = document.getElementById('setupGuide');
 const helpToggleButtons = document.querySelectorAll('[data-help-toggle]');
 const tr = window.t || ((key) => key);
 
 const DEFAULT_KEY_1_LABEL = 'API KEY 1';
 const DEFAULT_KEY_2_LABEL = 'API KEY 2';
+let msgTimer = null;
 
-function setMsg(t, isErr = false) {
-  msgEl.textContent = t || '';
-  msgEl.className = t ? (isErr ? 'small message error' : 'small message success') : 'small message';
-}
+function setMsg(t, options = {}) {
+  clearTimeout(msgTimer);
+  msgTimer = null;
 
-function updateGoogleSheetsExportFormatState() {
-  googleSheetsExportFormatEl.disabled = !googleSheetsNativeEnabledEl.checked;
+  if (!t) {
+    msgTextEl.textContent = '';
+    msgEl.hidden = true;
+    msgEl.removeAttribute('data-tone');
+    msgDismissBtn.hidden = true;
+    return;
+  }
+
+  const normalized = typeof options === 'boolean'
+    ? { tone: options ? 'error' : 'success' }
+    : options;
+  const tone = normalized.tone || 'success';
+  const defaultDuration = tone === 'error' || tone === 'progress' ? 0 : 3000;
+  const duration = Number.isFinite(normalized.duration) ? normalized.duration : defaultDuration;
+
+  msgTextEl.textContent = t;
+  msgEl.dataset.tone = tone;
+  msgEl.hidden = false;
+  msgDismissBtn.hidden = tone !== 'error';
+
+  if (duration > 0) {
+    msgTimer = setTimeout(() => setMsg(''), duration);
+  }
 }
 
 function updateSetupGuideState() {
@@ -91,7 +115,7 @@ async function applyCustomIcon() {
     return;
   }
 
-  setMsg('Processing icon...');
+  setMsg('Processing icon...', { tone: 'progress' });
   try {
     const pngs = await rasterizePngUrl(iconUrl);
     const resp = await chrome.runtime.sendMessage({
@@ -100,20 +124,21 @@ async function applyCustomIcon() {
       pngs
     });
     if (!resp?.ok) {
-      setMsg(resp?.error || 'Could not apply the custom icon.', true);
+      setMsg(window.getUserFacingError?.(resp?.error) || resp?.error || 'Could not apply the custom icon.', true);
       return;
     }
     await window.refreshDocumentIcon?.();
     setMsg('Custom icon applied.');
   } catch (error) {
-    setMsg(error?.message === 'not-png' ? 'The URL must return a PNG image.' : (error?.message || 'Could not process the icon URL.'), true);
+    const message = window.getUserFacingError?.(error?.message) || error?.message;
+    setMsg(error?.message === 'not-png' ? 'The URL must return a PNG image.' : (message || 'Could not process the icon URL.'), true);
   }
 }
 
 async function resetCustomIcon() {
   const resp = await chrome.runtime.sendMessage({ type: 'RESET_CUSTOM_ACTION_ICON' });
   if (!resp?.ok) {
-    setMsg(resp?.error || 'Could not reset the icon.', true);
+    setMsg(window.getUserFacingError?.(resp?.error) || resp?.error || 'Could not reset the icon.', true);
     return;
   }
   customIconUrlEl.value = '';
@@ -130,13 +155,14 @@ async function load() {
     'apiKey2Label',
     'imageExportMode',
     'previewAutoSaveDisabled',
+    'disableClassicLatexRendering',
+    'includePdfMetadata',
     'removeDocumentHeader',
     'removeDocumentFooter',
+    'googleNativeExportsEnabled',
     'googleDocsDocxEnabled',
     'googleSlidesPptxEnabled',
     'googleSheetsNativeEnabled',
-    'googleNativeExportsEnabled',
-    'googleSheetsExportFormat',
     'customActionIconUrl'
   ], ({
     apiKey,
@@ -146,13 +172,14 @@ async function load() {
     apiKey2Label,
     imageExportMode,
     previewAutoSaveDisabled,
+    disableClassicLatexRendering,
+    includePdfMetadata,
     removeDocumentHeader,
     removeDocumentFooter,
+    googleNativeExportsEnabled,
     googleDocsDocxEnabled,
     googleSlidesPptxEnabled,
     googleSheetsNativeEnabled,
-    googleNativeExportsEnabled,
-    googleSheetsExportFormat,
     customActionIconUrl
   }) => {
     apiKey1El.value = (apiKey1 || apiKey || '').trim();
@@ -161,15 +188,15 @@ async function load() {
     apiKey2LabelEl.value = (apiKey2Label || DEFAULT_KEY_2_LABEL).trim();
     imageExportModeEl.value = imageExportMode === 'separate' ? 'separate' : 'zip';
     previewAutoSaveDisabledEl.checked = previewAutoSaveDisabled === true;
+    disableClassicLatexRenderingEl.checked = disableClassicLatexRendering === true;
+    includePdfMetadataEl.checked = includePdfMetadata === true;
     removeDocumentHeaderEl.checked = removeDocumentHeader === true;
     removeDocumentFooterEl.checked = removeDocumentFooter === true;
     const legacyGoogleNativeEnabled = googleNativeExportsEnabled === true;
     googleDocsDocxEnabledEl.checked = googleDocsDocxEnabled === true || (googleDocsDocxEnabled == null && legacyGoogleNativeEnabled);
     googleSlidesPptxEnabledEl.checked = googleSlidesPptxEnabled === true || (googleSlidesPptxEnabled == null && legacyGoogleNativeEnabled);
     googleSheetsNativeEnabledEl.checked = googleSheetsNativeEnabled === true || (googleSheetsNativeEnabled == null && legacyGoogleNativeEnabled);
-    googleSheetsExportFormatEl.value = googleSheetsExportFormat === 'csv' ? 'csv' : 'xlsx';
     customIconUrlEl.value = typeof customActionIconUrl === 'string' ? customActionIconUrl : '';
-    updateGoogleSheetsExportFormatState();
     updateSetupGuideState();
   });
 }
@@ -188,12 +215,13 @@ saveBtn.addEventListener('click', async () => {
     apiKey: apiKey1,
     imageExportMode,
     previewAutoSaveDisabled: previewAutoSaveDisabledEl.checked,
+    disableClassicLatexRendering: disableClassicLatexRenderingEl.checked,
+    includePdfMetadata: includePdfMetadataEl.checked,
     removeDocumentHeader: removeDocumentHeaderEl.checked,
     removeDocumentFooter: removeDocumentFooterEl.checked,
     googleDocsDocxEnabled: googleDocsDocxEnabledEl.checked,
     googleSlidesPptxEnabled: googleSlidesPptxEnabledEl.checked,
-    googleSheetsNativeEnabled: googleSheetsNativeEnabledEl.checked,
-    googleSheetsExportFormat: googleSheetsExportFormatEl.value === 'csv' ? 'csv' : 'xlsx'
+    googleSheetsNativeEnabled: googleSheetsNativeEnabledEl.checked
   };
   const { activeApiKeySlot } = await chrome.storage.local.get(['activeApiKeySlot']);
   if (activeApiKeySlot === 'key2' && !apiKey2) {
@@ -227,11 +255,11 @@ function bindHelpToggles() {
 
 bindVisibilityToggle(toggleVisibility1Btn, apiKey1El);
 bindVisibilityToggle(toggleVisibility2Btn, apiKey2El);
-googleSheetsNativeEnabledEl.addEventListener('change', updateGoogleSheetsExportFormatState);
 apiKey1El.addEventListener('input', updateSetupGuideState);
 apiKey2El.addEventListener('input', updateSetupGuideState);
 applyCustomIconBtn.addEventListener('click', applyCustomIcon);
 resetCustomIconBtn.addEventListener('click', resetCustomIcon);
+msgDismissBtn.addEventListener('click', () => setMsg(''));
 bindHelpToggles();
 
 load();

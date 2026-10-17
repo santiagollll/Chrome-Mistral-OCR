@@ -1,5 +1,9 @@
 # Chrome Mistral OCR
 
+<p align="center">
+  <img src="assets/banner.png" alt="Mistral OCR" width="100%">
+</p>
+
 Mistral OCR を使って文書や画像を文字起こしするための Chrome 拡張機能です。拡張機能のポップアップから操作でき、結果はローカルに保存され、プレビュー、編集、コピー、Markdown エクスポート、画像エクスポート、レンダリング済みプレビューからの PDF 出力ができます。
 
 ## プライバシー
@@ -28,6 +32,8 @@ Mistral AI の利用規約: https://mistral.ai/terms
 
 ## 初回利用
 
+> ⚠️ Pay as you go が有効になっていない場合、この拡張機能は動作しません。[Mistral の請求ページ](https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO)で有効にし、残高を追加してください。
+
 1. Mistral Console で API key を作成します: https://console.mistral.ai/
 2. 拡張機能を開いて `Configure` をクリックします。
 3. `API key 1` にキーを貼り付けます。
@@ -52,7 +58,7 @@ Google Docs、Google Slides、Google Sheets はデフォルトで PDF として�
 
 ## トラブルシューティング
 
-OCR が開始しない場合は、API key が保存されていること、およびアクティブなタブに対応するリソースがあることを確認してください。すでにバックグラウンド OCR が実行中なら、終了を待つかキャンセルしてください。
+OCR が開始しない場合は、Pay as you go が有効で残高があること、API key が保存されていること、およびアクティブなタブに対応するリソースがあることを確認してください。すでにバックグラウンド OCR が実行中なら、終了を待つかキャンセルしてください。
 
 ローカルファイルが動作しない場合は、`chrome://extensions` を開き、この拡張機能の詳細から `Allow access to file URLs` を有効にしてください。
 

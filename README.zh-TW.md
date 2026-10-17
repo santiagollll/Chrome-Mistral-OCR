@@ -1,5 +1,9 @@
 # Chrome Mistral OCR
 
+<p align="center">
+  <img src="assets/banner.png" alt="Mistral OCR" width="100%">
+</p>
+
 用於透過 Mistral OCR 轉錄文件和圖片的 Chrome 擴充功能。它可從擴充功能彈窗操作，將結果儲存在本機，並支援預覽、編輯、複製、匯出 Markdown、匯出圖片，以及從渲染後的預覽產生 PDF 輸出。
 
 ## 隱私
@@ -28,6 +32,8 @@ Mistral AI 條款: https://mistral.ai/terms
 
 ## 首次使用
 
+> ⚠️ 如果未啟用 Pay as you go，此擴充功能將無法使用。請在 [Mistral 帳單頁面](https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO) 中啟用並儲值。
+
 1. 在 Mistral Console 建立 API key: https://console.mistral.ai/
 2. 開啟擴充功能並點擊 `Configure`。
 3. 將金鑰貼到 `API key 1`。
@@ -52,7 +58,7 @@ Google Docs、Google Slides 和 Google Sheets 預設會匯出為 PDF。也可以
 
 ## 疑難排解
 
-如果 OCR 無法啟動，請確認已儲存 API key，且目前作用中的分頁包含相容資源。如果背景 OCR 工作已經在執行，請等待完成或先取消。
+如果 OCR 無法啟動，請確認 Pay as you go 已啟用且帳戶有可用餘額，已儲存 API key，且目前作用中的分頁包含相容資源。如果背景 OCR 工作已經在執行，請等待完成或先取消。
 
 如果本機檔案無法使用，請打開 `chrome://extensions`，進入此擴充功能的詳細資訊，並啟用 `Allow access to file URLs`。
 

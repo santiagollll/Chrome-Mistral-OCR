@@ -24,7 +24,13 @@
     "message": "Set up your Mistral API key"
   },
   "popup_setup_body": {
-    "message": "You need an API key to transcribe documents with OCR."
+    "message": "この拡張機能を使用するには、Mistral アカウントで Pay as you go を有効にし、残高を追加してください。"
+  },
+  "payg_required_warning": {
+    "message": "⚠️ Pay as you go が有効になっていない場合、この拡張機能は動作しません。"
+  },
+  "setup_step_activate_payg": {
+    "message": "Mistral アカウントで Pay as you go を有効にし、残高を追加してください。"
   },
   "setup_step_create_key": {
     "message": "Create an API key in Mistral Console."
@@ -41,11 +47,34 @@
   "open_mistral_console": {
     "message": "Mistral Console を開く"
   },
+  "activate_pay_as_you_go": {
+    "message": "Pay as you go を有効にする"
+  },
   "ocr_controls_aria": {
     "message": "OCR controls"
   },
   "current_resource": {
     "message": "現在のリソース"
+  },
+  "resource_indicator": {
+    "message": "リソース: $RESOURCE$",
+    "placeholders": {
+      "resource": {
+        "content": "$1"
+      }
+    }
+  },
+  "resource_pdf": {
+    "message": "PDF"
+  },
+  "resource_google_docs": {
+    "message": "Google ドキュメント"
+  },
+  "resource_google_slides": {
+    "message": "Google スライド"
+  },
+  "resource_google_sheets": {
+    "message": "Google スプレッドシート"
   },
   "format_for_transcription": {
     "message": "Format to use for this transcription"
@@ -78,10 +107,10 @@
     "message": "設定"
   },
   "options_page_title": {
-    "message": "Options - Mistral OCR"
+    "message": "オプション - Mistral OCR"
   },
   "options_subtitle": {
-    "message": "Manage local credentials, export, and advanced OCR options."
+    "message": "ローカル認証情報、エクスポート、詳細なOCRオプションを管理します。"
   },
   "view_transcriptions": {
     "message": "文字起こしを表示"
@@ -90,10 +119,19 @@
     "message": "Connect Mistral OCR with your API key"
   },
   "options_setup_body": {
-    "message": "The extension runs locally in Chrome, but OCR uses your Mistral account."
+    "message": "この拡張機能を使用するには、Mistral アカウントで Pay as you go を有効にし、残高を追加してください。"
   },
   "options_setup_step_open": {
-    "message": "Open Mistral Console and create an API key."
+    "message": "Mistral Console を開いてください。"
+  },
+  "options_setup_step_create_account": {
+    "message": "ログインするか、Mistral アカウントを作成してください。"
+  },
+  "options_setup_step_activate_payg": {
+    "message": "Mistral アカウントで Pay as you go を有効にし、残高を追加してください。"
+  },
+  "options_setup_step_create_key": {
+    "message": "Mistral Console で API key を作成してください。"
   },
   "options_setup_step_paste": {
     "message": "Paste that key into API key 1."
@@ -105,28 +143,28 @@
     "message": "Open a compatible PDF, document, or image and use Transcribe (OCR) from the popup."
   },
   "api_keys_aria": {
-    "message": "API keys"
+    "message": "APIキー"
   },
   "primary_credential": {
-    "message": "Primary credential"
+    "message": "プライマリ認証情報"
   },
   "optional_credential": {
-    "message": "Optional credential"
+    "message": "オプションの認証情報"
   },
   "visible_name": {
-    "message": "Visible name"
+    "message": "表示名"
   },
   "key": {
-    "message": "Key"
+    "message": "キー"
   },
   "show": {
-    "message": "Show"
+    "message": "表示"
   },
   "hide": {
     "message": "Hide"
   },
   "stored_locally_note": {
-    "message": "Stored in this extension's local Chrome storage."
+    "message": "この拡張機能のChromeローカルストレージに保存されます。"
   },
   "api_key_2_help_aria": {
     "message": "View information about API key 2"
@@ -153,13 +191,13 @@
     "message": "If this key is empty, the popup will not show a selector."
   },
   "export": {
-    "message": "Export"
+    "message": "エクスポート"
   },
   "export_aria": {
     "message": "Export"
   },
   "files_and_images": {
-    "message": "Files and images"
+    "message": "ファイルと画像"
   },
   "image_export": {
     "message": "Image export"
@@ -174,7 +212,7 @@
     "message": "Preview and editing"
   },
   "result_editing": {
-    "message": "Result editing"
+    "message": "結果の編集"
   },
   "disable_preview_autosave": {
     "message": "Disable autosave in preview mode"
@@ -182,14 +220,34 @@
   "disable_preview_autosave_note": {
     "message": "When enabled, Preview/Edit will show the Save changes button."
   },
+  "disable_classic_latex_rendering": {
+    "message": "従来のLaTeXレンダリングを無効にする"
+  },
+  "disable_classic_latex_rendering_note": {
+    "message": "有効にすると、ドル区切りを使う従来の数式はテキストとして表示されます。現代的なLaTeXは引き続きレンダリングされます。"
+  },
+  "include_pdf_metadata": {
+    "message": "PDFの冒頭にドキュメント情報を含める"
+  },
+  "include_pdf_metadata_note": {
+    "message": "有効にすると、PDFの冒頭にタイトル、元のSHA、その他のドキュメント情報が表示されます。"
+  },
+  "original_sha": {
+    "message": "元のSHA: $SHA$",
+    "placeholders": {
+      "sha": {
+        "content": "$1"
+      }
+    }
+  },
   "experimental": {
-    "message": "Experimental"
+    "message": "実験的"
   },
   "experimental_options_aria": {
     "message": "Experimental options"
   },
   "extraction_google_workspace": {
-    "message": "Extraction and Google Workspace"
+    "message": "抽出とGoogle Workspace"
   },
   "remove_document_header": {
     "message": "Remove document HEADER"
@@ -245,15 +303,6 @@
   "google_native_note": {
     "message": "Each service can export to its Office/CSV format instead of PDF."
   },
-  "google_sheets_format": {
-    "message": "Format for Google Sheets"
-  },
-  "use_xlsx": {
-    "message": "Use .xlsx"
-  },
-  "use_csv": {
-    "message": "Use .csv"
-  },
   "xlsx_help_label": {
     "message": ".xlsx help"
   },
@@ -294,49 +343,61 @@
     "message": "Note: to open local PDFs (file://), enable \"Allow access to file URLs\" for this extension in chrome://extensions."
   },
   "transcriptions_page_title": {
-    "message": "Transcriptions - Mistral OCR"
+    "message": "保存した文字起こし - Mistral OCR"
   },
   "local_archive": {
-    "message": "Local archive"
+    "message": "ローカルアーカイブ"
   },
   "transcriptions_subtitle": {
-    "message": "Search by name, URL, SHA, type, or OCR metadata."
+    "message": "名前、URL、元のSHA、種類、OCRメタデータで検索します。"
   },
   "back_to_settings": {
-    "message": "Back to settings"
+    "message": "設定に戻る"
   },
   "search_transcriptions": {
     "message": "Search transcriptions"
   },
   "search_placeholder": {
-    "message": "Name, URL, SHA, or type"
+    "message": "名前、URL、元のSHA、種類"
   },
   "transcription_list_aria": {
     "message": "Transcription list"
   },
   "preview_page_title": {
-    "message": "Preview/Edit - Mistral OCR"
+    "message": "プレビュー/編集 - Mistral OCR"
   },
   "transcription_actions_aria": {
     "message": "Transcription actions"
   },
+  "preview_details": {
+    "message": "詳細"
+  },
+  "show_preview_details": {
+    "message": "プレビューの詳細を表示"
+  },
+  "hide_preview_details": {
+    "message": "プレビューの詳細を非表示"
+  },
+  "dismiss_notification": {
+    "message": "通知を閉じる"
+  },
   "history": {
-    "message": "History"
+    "message": "文字起こし"
   },
   "save_changes": {
     "message": "Save changes"
   },
   "copy_markdown": {
-    "message": "Copy markdown"
+    "message": "Markdownをコピー"
   },
   "export_markdown": {
-    "message": "Export markdown"
+    "message": "Markdownをエクスポート"
   },
   "export_pdf": {
-    "message": "Export PDF"
+    "message": "PDFをエクスポート"
   },
   "export_images": {
-    "message": "Export images"
+    "message": "画像をエクスポート"
   },
   "rendered": {
     "message": "Rendered"
@@ -352,6 +413,12 @@
   },
   "error_initializing": {
     "message": "Error initializing"
+  },
+  "error_refresh_page_required": {
+    "message": "ページを更新して、もう一度お試しください。"
+  },
+  "error_invalid_google_export_format": {
+    "message": "Google のエクスポート形式が無効です。"
   },
   "api_key_configured": {
     "message": "設定済み"
@@ -388,6 +455,24 @@
   },
   "copy_content": {
     "message": "内容をコピー"
+  },
+  "rename_transcription": {
+    "message": "名前を変更"
+  },
+  "rename_name_placeholder": {
+    "message": "文字起こしの名前"
+  },
+  "rename_saved": {
+    "message": "文字起こしの名前を更新しました。"
+  },
+  "could_not_rename": {
+    "message": "文字起こしの名前を変更できませんでした。"
+  },
+  "error_transcription_name_required": {
+    "message": "名前を空にすることはできません。"
+  },
+  "error_transcription_name_too_long": {
+    "message": "名前は200文字以内にしてください。"
   },
   "showing_recent_transcriptions": {
     "message": "Showing $COUNT$ of $TOTAL$ recent transcriptions. Open \"View all\" to search, export, or delete.",
@@ -431,6 +516,14 @@
       }
     }
   },
+  "ocr_exists_for_document_format": {
+    "message": "$FORMAT$形式で作成されたOCRの文字起こしが既にあります。",
+    "placeholders": {
+      "format": {
+        "content": "$1"
+      }
+    }
+  },
   "no_previous_ocr_for_document": {
     "message": "No previous OCR for this document."
   },
@@ -446,6 +539,19 @@
   "starting_ocr_background": {
     "message": "Starting background OCR..."
   },
+  "ocr_access_help_title": { "message": "OCRを完了できませんでした" },
+  "ocr_access_help_body": { "message": "Pay as you goが有効でない、残高が不足している、または利用上限に達している可能性があります。" },
+  "ocr_access_reason_no_active_usage_limit": { "message": "このAPIキーではPay as you goが有効になっていない可能性があります。" },
+  "ocr_access_reason_rate_limit_reached": { "message": "Mistralの利用上限に達した可能性があります。" },
+  "ocr_access_reason_payment_required": { "message": "残高または支払い設定を確認する必要がある可能性があります。" },
+  "ocr_access_status_no_active_usage_limit": { "message": "Pay as you goまたは有効な利用設定が必要な可能性があります。" },
+  "ocr_access_status_rate_limit_reached": { "message": "利用上限に達した可能性があります。" },
+  "ocr_access_status_payment_required": { "message": "支払いまたは残高が必要な可能性があります。" },
+  "ocr_access_activate_payg": { "message": "Pay as you goを有効化" },
+  "ocr_access_details": { "message": "技術的な詳細" },
+  "ocr_http_status_label": { "message": "HTTPステータス" },
+  "ocr_mistral_code_label": { "message": "Mistralコード" },
+  "ocr_description_label": { "message": "説明" },
   "error_in_ocr": {
     "message": "OCR error"
   },
@@ -617,7 +723,7 @@
     "message": "画像"
   },
   "resource_image_ext": {
-    "message": "Image $EXT$",
+    "message": "画像 $EXT$",
     "placeholders": {
       "ext": {
         "content": "$1"
@@ -626,6 +732,9 @@
   },
   "resource_document": {
     "message": "文書"
+  },
+  "non_google_source": {
+    "message": "Google 以外の文書"
   },
   "resource_document_ext": {
     "message": "Document $EXT$",
@@ -878,5 +987,86 @@
   },
   "ocr_in_progress": {
     "message": "OCR 実行中"
+  },
+  "file_url_access_warning_title": {
+    "message": "ローカルファイルへのアクセスが無効です"
+  },
+  "file_url_access_warning_body": {
+    "message": "このローカルファイルを文字起こしするには、拡張機能によるファイル URL へのアクセスを許可してください。"
+  },
+  "file_url_access_warning_aria": {
+    "message": "ローカルファイルへのアクセスに関する警告"
+  },
+  "file_url_access_step_open": {
+    "message": "拡張機能の詳細ページを開きます。"
+  },
+  "file_url_access_step_toggle": {
+    "message": "「ファイル URL へのアクセスを許可する」を有効にします。"
+  },
+  "file_url_access_step_reopen": {
+    "message": "このポップアップをもう一度開いて、再試行します。"
+  },
+  "file_url_access_open_settings": {
+    "message": "拡張機能の設定を開く"
+  },
+  "error_file_url_access_required": {
+    "message": "このローカルファイルを文字起こしする前に、拡張機能の設定でファイル URL へのアクセスを許可してください。"
+  },
+  "error_open_extension_settings": {
+    "message": "拡張機能の設定を開けませんでした。"
+  },
+  "ocr_exists_generic": {
+    "message": "以前の OCR 文字起こしが存在します。"
+  },
+  "api_key_1_label": {
+    "message": "APIキー 1"
+  },
+  "api_key_2_label": {
+    "message": "APIキー 2"
+  },
+  "personalization": {
+    "message": "カスタマイズ"
+  },
+  "extension_icon": {
+    "message": "拡張機能のアイコン"
+  },
+  "custom_icon_description": {
+    "message": "このブラウザで拡張機能のツールバーアイコンを置き換えるPNG URLを使用します。"
+  },
+  "png_icon_url": {
+    "message": "PNGアイコンのURL"
+  },
+  "example": {
+    "message": "例："
+  },
+  "official_mistral_logo_png": {
+    "message": "Mistral公式ロゴ（PNG）"
+  },
+  "custom_icon_direct_png_note": {
+    "message": "直接リンクされたHTTPSのPNG URLのみ使用できます。アイコンはサイズ変更され、このブラウザにローカル保存されます。"
+  },
+  "apply_custom_icon": {
+    "message": "カスタムアイコンを適用"
+  },
+  "reset_custom_icon": {
+    "message": "既定のアイコンに戻す"
+  },
+  "preview_edit": {
+    "message": "プレビュー/編集"
+  },
+  "original_sha_label": {
+    "message": "SHA"
+  },
+ "custom_icon_section_aria": {
+    "message": "アイコン設定"
+  },
+  "ocr_error_details": {
+    "message": "OCRエラーの詳細"
+  },
+  "error_code_label": {
+    "message": "エラーコード"
+  },
+  "error_description_label": {
+    "message": "説明"
   }
 }

@@ -6,6 +6,16 @@ const OFFSCREEN_DOCUMENT_PATH = 'offscreen.html';
 let creatingOffscreenDocument = null;
 
 export const tabsQuery = (info) => new Promise((resolve) => chrome.tabs.query(info, resolve));
+
+export async function isAllowedFileSchemeAccess() {
+  try {
+    if (typeof chrome.extension?.isAllowedFileSchemeAccess !== 'function') return false;
+    return await chrome.extension.isAllowedFileSchemeAccess();
+  } catch {
+    return false;
+  }
+}
+
 export const tabsGet = (tabId) => new Promise((resolve, reject) => {
   chrome.tabs.get(tabId, (tab) => {
     const err = chrome.runtime.lastError;

@@ -1,5 +1,9 @@
 # Chrome Mistral OCR
 
+<p align="center">
+  <img src="assets/banner.png" alt="Mistral OCR" width="100%">
+</p>
+
 Estensione Chrome per trascrivere documenti e immagini con Mistral OCR. Funziona dal popup dell'estensione, salva i risultati localmente e consente anteprima, modifica, copia, esportazione Markdown, esportazione immagini e generazione di output PDF dalla preview renderizzata.
 
 ## Privacy
@@ -28,6 +32,8 @@ Note importanti:
 
 ## Primo utilizzo
 
+> ⚠️ Se Pay as you go non è attivo, questa estensione non funzionerà. Attivalo e aggiungi credito dalla [sezione fatturazione di Mistral](https://admin.mistral.ai/subscription/upgrade/subscribe?plan=PAY_AS_YOU_GO).
+
 1. Crea una API key in Mistral Console: https://console.mistral.ai/
 2. Apri l'estensione e fai clic su `Configura`.
 3. Incolla la chiave in `API key 1`.
@@ -52,7 +58,7 @@ Inoltre, l’estensione può funzionare con qualsiasi immagine che Chrome render
 
 ## Risoluzione dei problemi
 
-Se l'OCR non parte, verifica che una API key sia salvata e che la scheda attiva contenga una risorsa compatibile. Se è già in corso un OCR in background, attendi che termini oppure annullalo.
+Se l'OCR non parte, verifica che Pay as you go sia attivo con credito disponibile, che una API key sia salvata e che la scheda attiva contenga una risorsa compatibile. Se è già in corso un OCR in background, attendi che termini oppure annullalo.
 
 Se i file locali non funzionano, apri `chrome://extensions`, entra nei dettagli di questa estensione e abilita `Allow access to file URLs`.
 

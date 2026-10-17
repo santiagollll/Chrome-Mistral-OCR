@@ -22,6 +22,21 @@ function sendProgress(jobId, step, message) {
   });
 }
 
+function serializeError(error) {
+  const description = String(error?.description || error?.message || error || 'Unknown OCR error');
+  const code = error?.code || error?.status || (/fetch|network/i.test(description) ? 'NETWORK_ERROR' : 'OCR_ERROR');
+  return {
+    error: description,
+    errorCode: String(code),
+    errorDescription: description,
+    errorCategory: error?.category || null,
+    httpStatus: error?.status ?? null,
+    mistralCode: error?.mistralCode ?? null,
+    rateLimitHeaders: error?.rateLimitHeaders || {},
+    errorName: error?.name || 'Error'
+  };
+}
+
 async function runJob(payload) {
   currentJob = payload;
   currentController = new AbortController();
@@ -70,12 +85,13 @@ async function runJob(payload) {
       ocr
     });
   } catch (error) {
+    const details = serializeError(error);
     await sendMessage({
       target: 'background',
       type: 'OCR_OFFSCREEN_ERROR',
       jobId: payload.jobId,
-      error: error?.message || String(error),
-      cancelled: error?.name === 'AbortError' || /abort|cancel/i.test(error?.message || '')
+      ...details,
+      cancelled: error?.name === 'AbortError' || /abort|cancel/i.test(details.errorDescription)
     });
   } finally {
     currentJob = null;

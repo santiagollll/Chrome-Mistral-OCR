@@ -6,27 +6,35 @@
     <link rel="stylesheet" href="styles/mistral-ui.css">
   </head>
   <body class="transcriptions-page">
-    <main class="app-shell transcriptions-shell">
-      <header class="app-header">
-        <div>
+    <header class="page-topbar archive-topbar">
+      <div class="page-toolbar archive-toolbar">
+        <a class="button subtle compact-tool archive-settings-link" href="options.html" data-i18n-title="back_to_settings" data-i18n-aria-label="back_to_settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"/></svg>
+          <span class="page-action-label" data-i18n="back_to_settings">Volver a configuración</span>
+        </a>
+        <div class="page-heading archive-heading">
           <div class="eyebrow" data-i18n="local_archive">Archivo local</div>
           <h1 data-i18n="saved_transcriptions">Transcripciones guardadas</h1>
-          <p data-i18n="transcriptions_subtitle">Busca por nombre, URL, SHA, tipo o metadatos del OCR.</p>
         </div>
-        <a class="button subtle" href="options.html" data-i18n="back_to_settings">Volver a configuración</a>
-      </header>
+        <label class="archive-search">
+          <span class="visually-hidden" data-i18n="search_transcriptions">Buscar transcripciones</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></svg>
+          <input id="searchBox" type="search" placeholder="Nombre, URL, SHA original o tipo" data-i18n-placeholder="search_placeholder">
+        </label>
+      </div>
+    </header>
 
-      <div id="status" class="small status-line" aria-live="polite"></div>
-
-      <label class="search">
-        <span class="small" data-i18n="search_transcriptions">Buscar transcripciones</span>
-        <input id="searchBox" type="search" placeholder="Nombre, URL, SHA o tipo" data-i18n-placeholder="search_placeholder">
-      </label>
-
+    <main class="app-shell transcriptions-shell">
       <section id="list" class="transcription-list" aria-label="Lista de transcripciones" data-i18n-aria-label="transcription_list_aria"></section>
     </main>
 
+    <div id="status" class="app-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <span id="statusMessage"></span>
+      <button id="statusDismiss" class="app-toast-dismiss" type="button" hidden data-i18n-title="dismiss_notification" data-i18n-aria-label="dismiss_notification">×</button>
+    </div>
+
     <script src="i18n.js"></script>
+    <script src="resource-display.js"></script>
     <script src="transcriptions.js"></script>
   </body>
 </html>

@@ -8,36 +8,89 @@
   </head>
   <body class="preview-page">
     <header class="topbar">
-      <div class="title">
-        <div class="eyebrow">Preview/Edit</div>
-        <h1 id="title">Preview/Edit</h1>
+      <div class="preview-toolbar">
+        <a class="button subtle preview-tool preview-history" href="transcriptions.html" data-i18n-title="history" data-i18n-aria-label="history">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+          <span class="preview-action-label" data-i18n="history">Transcripciones</span>
+        </a>
+
+        <div class="preview-title-row">
+          <h1 id="title">Preview/Edit</h1>
+          <button id="renameTitle" class="subtle preview-icon-action" type="button" data-i18n-title="rename_transcription" data-i18n-aria-label="rename_transcription">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <nav class="preview-actions" aria-label="Acciones de transcripción" data-i18n-aria-label="transcription_actions_aria">
+          <button id="saveMd" class="preview-tool" type="button" hidden data-i18n-title="save_changes" data-i18n-aria-label="save_changes">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 3h12l2 2v16H5Z"></path>
+              <path d="M8 3v6h8V3M8 21v-7h8v7"></path>
+            </svg>
+            <span class="preview-action-label" data-i18n="save_changes">Guardar cambios</span>
+          </button>
+          <button id="copyRaw" class="preview-tool" type="button" data-i18n-title="copy_markdown" data-i18n-aria-label="copy_markdown">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="8" y="8" width="12" height="12" rx="2"></rect>
+              <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+            </svg>
+            <span class="preview-action-label" data-i18n="copy_markdown">Copiar markdown</span>
+          </button>
+          <button id="detailsToggle" class="preview-tool" type="button" aria-expanded="false" aria-controls="previewDetails" data-i18n-title="show_preview_details" data-i18n-aria-label="show_preview_details">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 11v5M12 8h.01"></path>
+            </svg>
+            <span class="preview-action-label" data-i18n="preview_details">Detalles</span>
+          </button>
+          <details id="exportMenu" class="export-menu">
+            <summary class="button preview-tool" data-i18n-title="export" data-i18n-aria-label="export">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path>
+              </svg>
+              <span class="preview-action-label" data-i18n="export">Exportar</span>
+              <svg class="export-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8 10 4 4 4-4"></path>
+              </svg>
+            </summary>
+            <div class="export-menu-panel">
+              <button id="exportMd" type="button" data-i18n="export_markdown">Exportar markdown</button>
+              <button id="exportPdf" type="button" data-i18n="export_pdf">Exportar PDF</button>
+              <button id="exportImages" type="button" data-i18n="export_images">Exportar imágenes</button>
+            </div>
+          </details>
+        </nav>
+      </div>
+
+      <section id="previewDetails" class="preview-details" hidden>
+        <div id="resourceIdentity" class="resource-identity"></div>
         <div id="meta" class="meta"></div>
         <div id="confidenceSummary" class="confidence-summary"></div>
-      </div>
-      <nav class="actions" aria-label="Acciones de transcripción" data-i18n-aria-label="transcription_actions_aria">
-        <a class="button subtle" href="transcriptions.html" data-i18n="history">Historial</a>
-        <button id="saveMd" type="button" hidden data-i18n="save_changes">Guardar cambios</button>
-        <button id="copyRaw" type="button" data-i18n="copy_markdown">Copiar markdown</button>
-        <button id="exportMd" type="button" data-i18n="export_markdown">Exportar markdown</button>
-        <button id="exportPdf" type="button" data-i18n="export_pdf">Exportar PDF</button>
-        <button id="exportImages" type="button" data-i18n="export_images">Exportar imágenes</button>
-      </nav>
+      </section>
     </header>
 
     <main class="preview-main">
-      <div id="status" class="small status-line" aria-live="polite"></div>
-
       <section id="splitMode" class="split">
         <article class="panel">
-          <h2 class="split-title">Markdown</h2>
-          <div id="rawEditor" class="viewer raw" contenteditable="true" spellcheck="false"></div>
+          <span class="viewer-label" aria-hidden="true">Markdown</span>
+          <div id="rawEditor" class="viewer raw" contenteditable="true" spellcheck="false" aria-label="Markdown"></div>
         </article>
         <article class="panel">
-          <h2 class="split-title" data-i18n="rendered">Renderizado</h2>
-          <div id="splitRendered" class="viewer markdown-body"></div>
+          <span class="viewer-label" aria-hidden="true" data-i18n="rendered">Renderizado</span>
+          <div id="splitRendered" class="viewer markdown-body" tabindex="0" data-i18n-aria-label="rendered"></div>
         </article>
       </section>
     </main>
+
+    <div id="status" class="preview-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <span id="statusMessage"></span>
+      <button id="statusDismiss" class="preview-toast-dismiss" type="button" hidden data-i18n-title="dismiss_notification" data-i18n-aria-label="dismiss_notification">×</button>
+    </div>
 
     <div id="confidencePopover" class="confidence-popover" role="dialog" aria-live="polite">
       <div id="confidencePopoverText"></div>
@@ -51,6 +104,7 @@
     <script src="vendor/katex/katex.min.js"></script>
     <script src="vendor/katex/auto-render.min.js"></script>
     <script src="i18n.js"></script>
+    <script src="resource-display.js"></script>
     <script src="preview.js"></script>
   </body>
 </html>
